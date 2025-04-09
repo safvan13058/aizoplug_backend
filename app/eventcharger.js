@@ -1,5 +1,5 @@
 const mqtt = require("mqtt");
-const db = require("../middlewares/dbconnection");
+const db = require("../middelware/db");
 require("dotenv").config(); // For environment variables
 const AWS = require("aws-sdk");
 // MQTT Broker Connection
