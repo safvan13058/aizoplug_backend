@@ -88,7 +88,14 @@ app.get('/api/chargers', async (req, res) => {
     res.status(200).json({ received: true });
   });
 // -------------------------------vehicle------------------------------
-import { create_vehi, update_vehi, toggle_auto, getvehiclebyuser, delete_vehi } from './vehicle';
+const {
+  create_vehi,
+  update_vehi,
+  toggle_auto,
+  getvehiclebyuser,
+  delete_vehi,
+} = require('./vehicle');
+
 
 app.post('/api/add/vehicles/',
     validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
