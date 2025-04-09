@@ -123,7 +123,9 @@ client.on("message", async (topic, messageBuffer) => {
 
     // 2. Extract status from message
     const status = message?.status;
-    if (!status) return console.warn("No status field in message, skipping.");
+    if (!status) 
+      return 
+    // console.warn("No status field in message, skipping.");
 
     // 3. If status !== "charging", update connector + session
     if (status.toLowerCase() !== "charging") {
