@@ -46,13 +46,13 @@ client.on("connect", () => {
   console.log("Connected to MQTT broker");
 
   // Subscribe to shadow update topic
-  client.subscribe("$aws/things/+/shadow/update/accepted", { qos: 1 }, (err) => {
-    if (err) {
-      console.error("Subscription error:", err);
-    } else {
-      console.log("Subscribed to device shadow updates");
-    }
-  });
+  // client.subscribe("$aws/things/+/shadow/update/accepted", { qos: 1 }, (err) => {
+  //   if (err) {
+  //     console.error("Subscription error:", err);
+  //   } else {
+  //     console.log("Subscribed to device shadow updates");
+  //   }
+  // });
   // Subscribe to custom topic: e.g., charging updates
   client.subscribe("+/out", { qos: 1 }, (err) => {
     if (err) console.error("Subscription error (+/out):", err);

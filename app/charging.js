@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../middelware/db'); // your PostgreSQL connection instance
 const {publishToConnector}=require('./eventcharger')
+
 router.post('/start', async (req, res) => {
   const {
     user_id,
@@ -57,15 +58,15 @@ router.post('/start', async (req, res) => {
 
 
      // 4. Publish MQTT message to start charger
-     const topic = `${ocppId}/out`;
+     const topic = `${connector_id}/out`;
      const mqttMessage = {
        action: "RemoteStartTransaction",
        data: {
-         connectorId: 1, // This may need to be dynamic
+         connectorId: connector_id, // This may need to be dynamic
          idTag: `${user_id}`
        }
      };
-     publishToConnector(ocppId,mqttMessage)
+     publishToConnector(connector_id,mqttMessage)
 
     await db.query('COMMIT');
 
