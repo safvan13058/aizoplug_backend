@@ -1,4 +1,7 @@
 const pool = require('../middelware/db');
+const express = require('express');
+const app = express();
+app.use(express.json()); // for parsing application/json
 
 
 const verifyWalletOwner = async (req, res, next) => {
