@@ -104,6 +104,7 @@ const update_vehi=async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   };
+  
   const toggle_auto=async (req, res) => {
     const { id } = req.params;
   

@@ -94,7 +94,36 @@ const spent= async (req, res) => {
   };
 
 
+  const { v4: uuidv4 } = require('uuid');
 
+  const create_wallet = async (req, res) => {
+    const user_id = req.user.id;
+    const {
+      wallet_type = 'general',
+      currency = 'INR',
+      is_default = false
+    } = req.body;
+  
+    const wallet_number = uuidv4(); // generate wallet number
+  
+    try {
+      const result = await pool.query(
+        `INSERT INTO wallets (
+          user_id, wallet_number, wallet_type, currency, is_default
+        ) VALUES ($1, $2, $3, $4, $5)
+        RETURNING *`,
+        [user_id, wallet_number, wallet_type, currency, is_default]
+      );
+  
+      res.status(201).json({
+        message: "Wallet created successfully",
+        wallet: result.rows[0]
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+  
 const userwallethistory= async (req, res) => {
     const userId = req.params.userId;
   
@@ -138,4 +167,4 @@ const getuserwallet=async (req, res) => {
     }
   }
   
-module.exports={ topup,spent,userwallethistory, getuserwallet}
+module.exports={ topup,spent,userwallethistory, getuserwallet,create_wallet}

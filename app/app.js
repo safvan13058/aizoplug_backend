@@ -125,4 +125,18 @@ const charging=require('./charging')
 app.use('/charging',charging)
 
 // -----------------------end charging session-------------------------
+const {
+  userwallethistory, getuserwallet,create_wallet
+} = require('./wallet');
+
+app.post('/api/add/wallet/',
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
+  , create_wallet);
+
+app.get('/api/display/wallet/',
+    validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
+    , getuserwallet);
+app.get('/api/display/wallet/history',
+      validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
+      , userwallethistory);
 module.exports = app
