@@ -147,7 +147,7 @@ const userwallethistory= async (req, res) => {
 
 
 const getuserwallet=async (req, res) => {
-    const userId = req.params.userId;
+    const userId = req.user.id;
   
     try {
       const result = await pool.query(
