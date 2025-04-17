@@ -2,7 +2,7 @@ const express = require('express')
 const dashboard = express.Router()
 const db = require('../middelware/db')
 dashboard.use(express.json()); 
-
+const { validateJwt, authorizeRoles } = require('../middleware/auth');
 
 
 // ............................................................................. insert ...........................................................................
@@ -29,5 +29,46 @@ dashboard.post('/insert/charger', async (req, res) => {
         return res.status(500).json({ error: "Error inserting data" });
     }
 });
+// --------------------------------station users----------------------------
 
+const {
+    addPartner,
+    updatePartner,
+    deletePartner,
+    listPartners
+  } = require('./station_user');
+  
+const allowedRoles = ['admin','staff'];
+
+// Add partner to a station
+dashboard.post(
+  'api/station/:station_id/partners',
+  validateJwt,
+  authorizeRoles(...allowedRoles),
+  addPartner
+);
+
+// Update a partner
+dashboard.put(
+  'api/station/:station_id/partners/:user_id',
+  validateJwt,
+  authorizeRoles(...allowedRoles),
+  updatePartner
+);
+
+// Delete a partner
+dashboard.delete(
+  'api/station/:station_id/partners/:user_id',
+  validateJwt,
+  authorizeRoles(...allowedRoles),
+  deletePartner
+);
+
+// List all partners
+dashboard.get(
+  'api/station/:station_id/partners',
+  validateJwt,
+  authorizeRoles('admin', 'staff', 'dealer', 'customer'),
+  listPartners
+);
 module.exports = dashboard

@@ -24,7 +24,7 @@ const verifyWalletOwner = async (req, res, next) => {
   
 const topup=async (req, res) => {
     const { amount } = req.body;
-    const walletId = req.params.id;
+    const walletId = req.params.walletId;
   
     try {
       // Get wallet to retrieve user_id
@@ -46,14 +46,21 @@ const topup=async (req, res) => {
       const updatedWallet = updateRes.rows[0];
   
       // Insert log with user_id
-      await pool.query(
-        `INSERT INTO wallet_transactions
-         (wallet_id, user_id, transaction_type, amount, balance_after, description)
-         VALUES ($1, $2, 'top_up', $3, $4, $5)`,
-        [walletId, wallet.user_id, amount, updatedWallet.balance, `Top-up of ₹${amount}`]
+      const transactionRes = await pool.query(
+        `INSERT INTO transactions 
+         (user_id, amount, transaction_type, payment_gateway_id, status, notes)
+         VALUES ($1, $2, 'top-up', $3, 'completed', $4)
+         RETURNING *`,
+        [wallet.user_id, amount, 'gateway_placeholder', 'Top-up of ₹' + amount]
       );
   
-      res.json({ message: `Wallet topped up with ₹${amount}`, wallet: updatedWallet });
+      const transaction = transactionRes.rows[0];
+  
+      res.json({
+        message: `Wallet topped up with ₹${amount}`,
+        // wallet: updatedWallet,
+        transaction: transaction
+      });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -148,10 +155,9 @@ const userwallethistory= async (req, res) => {
 
 const getuserwallet=async (req, res) => {
     const userId = req.user.id;
-  
     try {
       const result = await pool.query(
-        `SELECT * FROM wallets
+        `SELECT * FROM wallets    
          WHERE user_id = $1
          ORDER BY is_default DESC, created_at`,
         [userId]
