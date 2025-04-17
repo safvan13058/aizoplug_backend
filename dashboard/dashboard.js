@@ -2,7 +2,7 @@ const express = require('express')
 const dashboard = express.Router()
 const db = require('../middelware/db')
 dashboard.use(express.json()); 
-const { validateJwt, authorizeRoles } = require('../middleware/auth');
+const { validateJwt, authorizeRoles } = require('../middelware/auth');
 
 
 // ............................................................................. insert ...........................................................................
