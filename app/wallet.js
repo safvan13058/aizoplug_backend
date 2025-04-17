@@ -139,7 +139,7 @@ const userwallethistory= async (req, res) => {
   
     try {
       const result = await pool.query(
-        `SELECT * FROM wallet_transactions
+        `SELECT * FROM transactions
          WHERE user_id = $1
          ORDER BY created_at DESC`,
         [userId]
