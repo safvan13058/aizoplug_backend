@@ -140,7 +140,7 @@ app.get('/api/display/wallet/history',
       validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
       , userwallethistory);
 
-app.get('/api/topup/wallet/:walletId',
+app.post('/api/topup/wallet/:walletId',
         validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
         , topup);
 module.exports = app
