@@ -95,6 +95,9 @@ const {
   getvehiclebyuser,
   delete_vehi,
 } = require('./vehicle');
+app.get('/working', (req, res) => {
+  res.send('app Server is working!');
+});
 
 
 app.post('/api/add/vehicles/',

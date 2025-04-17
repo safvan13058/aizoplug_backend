@@ -2,8 +2,6 @@ const express = require('express');
 const pool = require('../middelware/db');
 const {validateJwt,authorizeRoles} = require('../middelware/auth')
 
-
-
 const create_vehi = async (req, res) => {
     const {
         vehicle_number,
@@ -12,15 +10,15 @@ const create_vehi = async (req, res) => {
         make,
         model,
         auto_charging_enabled
-    } = req.body;
+        } = req.body;
      const user_id=req.user.id
 
-    try {
+     try {
         const result = await pool.query(
             `INSERT INTO vehicles 
         (vehicle_number, vin_number, user_id, wheel_type, make, model, auto_charging_enabled) 
         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-            [vehicle_number, vin_number, user_id, wheel_type, make, model, auto_charging_enabled]
+            [vehicle_number, vin_number, user_id, wheel_type, make, model, auto_charging_enabled||false]
         );
         res.json(result.rows[0]);
     } catch (err) {
