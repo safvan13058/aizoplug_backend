@@ -174,7 +174,7 @@ client.on("message", async (topic, messageBuffer) => {
 
       // 3c. Update session to "stopped"
       await db.query(
-        `UPDATE charging_sessions SET status = 'stopped', ended_at = NOW() WHERE id = $1`,
+        `UPDATE charging_sessions SET status = 'completed', ended_at = NOW() WHERE id = $1`,
         [sessionId]
       );
 
@@ -286,10 +286,6 @@ client.on("message", async (topic, messageBuffer) => {
     console.error("Error handling metervalue:", err.message);
   }
 });
-
-
-
-
 
 function publishToConnector(thingId, messageObj) {
 
