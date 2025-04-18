@@ -183,7 +183,7 @@ async function updateConnectorstate(ocppId, state) {
 client.on("message", async (topic, messageBuffer) => {
   try {
     const payload = JSON.parse(messageBuffer.toString());
-    console.log(`MQTT message received on ${topic}:`, payload);
+    // console.log(`MQTT message received on ${topic}:`, payload);
 
     // 1. Extract ocpp_id from topic: "<ocpp_id>/out"
     // const [ocppId] = topic.split("/");
