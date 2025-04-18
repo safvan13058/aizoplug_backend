@@ -82,7 +82,8 @@ dashboard.get(
   listPartners
 );
 // ---------------------------------------------------------------------------
-// ----------------------stations-------------------------------------
-
+// ----------------------connectors-------------------------------------
+const {addConnector} = require('./connectors');
+dashboard.post('/api/stations/:station_id/connectors', addConnector);
 
 module.exports = dashboard
