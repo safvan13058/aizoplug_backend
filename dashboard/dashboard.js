@@ -84,6 +84,9 @@ dashboard.get(
 // ---------------------------------------------------------------------------
 // ----------------------connectors-------------------------------------
 const {addConnector} = require('./connectors');
-dashboard.post('/api/stations/:station_id/connectors', addConnector);
+dashboard.post('/api/stations/:station_id/connectors', 
+  validateJwt,
+  authorizeRoles('admin', 'staff', 'dealer'),
+  addConnector);
 
 module.exports = dashboard
