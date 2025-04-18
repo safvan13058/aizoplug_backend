@@ -102,8 +102,8 @@ client.on("message", async (topic, messageBuffer) => {
 client.on("message", async (topic, message) => {
   try {
     const payload = JSON.parse(message.toString());
-    console.log("Received message on topic:", topic);
-    console.log("Payload:", payload);
+    // console.log("Received message on topic:", topic);
+    // console.log("Payload:", payload);
 
     // Topic format: "<ocppId>/out" or "<ocppId>/in"
     const [ocppId, direction] = topic.split('/');
