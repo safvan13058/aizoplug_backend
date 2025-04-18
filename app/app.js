@@ -145,13 +145,13 @@ app.post('/api/topup/wallet/:walletId',
         , topup);
 
 // --------------------------------------------------------------------
-const { addstataions} = require('../dashboard/stations');
+const {addstations} = require('../dashboard/stations');
 
  app.post(
    '/api/add/station',
    validateJwt,
    authorizeRoles('admin','staff','dealer','host'),
-   addstataions
+   addstations
  );
 
 module.exports = app
