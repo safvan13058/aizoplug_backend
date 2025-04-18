@@ -64,6 +64,39 @@ client.on("connect", () => {
     if (err) console.error("Subscription error (+/in):", err);
     else console.log("Subscribed to meter value updates");
   });
+
+  client.subscribe("$aws/things/+/shadow/update/delta", { qos: 1 }, (err) => {
+    if (err) {
+      console.error("Failed to subscribe with wildcard:", err);
+    } else {
+      console.log("🔍 Listening for all device shadow status changes (delta)...");
+    }
+  });
+  
+});
+
+client.on("message", async (topic, messageBuffer) => {
+  if (topic.includes("/shadow/update/delta")) {
+    const delta = JSON.parse(messageBuffer.toString());
+
+    // Extract the thingName from the topic
+    const thingName = topic.split("/")[2]; // This will be your ocppId
+
+    if (delta.state && delta.state.status) {
+      const status = delta.state.status;
+
+      if (status === "connected") {
+        console.log(`✅ [${thingName}] is CONNECTED (from desired state).`);
+        await updateConnectorStatus(thingName, "connected");
+      } else if (status === "disconnected") {
+        console.log(`❌ [${thingName}] is DISCONNECTED (from desired state).`);
+        await updateConnectorStatus(thingName, "disconnected");
+      } else {
+        console.log(`ℹ️ [${thingName}] status changed to ${status} (unhandled).`);
+        await updateConnectorStatus(thingName, status);
+      }
+    }
+  }
 });
 
 client.on("message", async (topic, message) => {
@@ -125,21 +158,60 @@ async function updateConnectorStatus(ocppId, status) {
     console.error("Error updating connector status:", err);
   }
 }
+async function updateConnectorstate(ocppId, state) {
+  try {
+    const checkQuery = `SELECT id FROM connectors WHERE ocpp_id = $1`;
+    const checkResult = await db.query(checkQuery, [ocppId]);
+
+    if (checkResult.rowCount === 0) {
+      console.warn(`⚠️ Connector with ocpp_id "${ocppId}" not found. Skipping update.`);
+      return;
+    }
+
+    const updateQuery = `
+      UPDATE connectors
+      SET state = $1, last_updated = NOW()
+      WHERE ocpp_id = $2
+    `;
+    await db.query(updateQuery, [state, ocppId]);
+    console.log(`🔄 Updated connector ${ocppId} to status "${state}".`);
+  } catch (err) {
+    console.error("❌ Error updating connector status:", err);
+  }
+}
 
 client.on("message", async (topic, messageBuffer) => {
   try {
-    const message = JSON.parse(messageBuffer.toString());
-    console.log(`MQTT message received on ${topic}:`, message);
+    const payload = JSON.parse(messageBuffer.toString());
+    console.log(`MQTT message received on ${topic}:`, payload);
 
     // 1. Extract ocpp_id from topic: "<ocpp_id>/out"
-    const [ocppId] = topic.split("/");
+    // const [ocppId] = topic.split("/");
+    const [ocppId, direction] = topic.split('/');
+
+    if (!ocppId || direction !== 'out') {
+      // Only handle status updates from <ocppId>/out
+      return;
+    }
 
     if (!ocppId) return console.warn("Invalid topic format, skipping.");
 
     // 2. Extract status from message
-    const status = message?.status;
-    if (!status) 
-      return 
+    // Ensure it's a StatusNotification action
+    if (payload.action !== "StatusNotification" || !payload.payload) {
+      return;
+    }
+
+    const { status } = payload.payload;
+
+    if (typeof status === 'undefined') {
+      // Skip if there's no status value
+      return;
+    }
+
+    // const status = message?.status;
+    if (!status)
+      return
     // console.warn("No status field in message, skipping.");
 
     // 3. If status !== "charging", update connector + session
@@ -191,16 +263,30 @@ client.on("message", async (topic, messageBuffer) => {
   }
 });
 
+
 client.on("message", async (topic, messageBuffer) => {
   try {
     const message = JSON.parse(messageBuffer.toString());
 
-    if (topic.includes("/") && message?.meterValue != null) {
+    if (topic.includes("/") && Array.isArray(message?.meterValue)) {
       const [ocppId] = topic.split("/");
 
-      const meterWh = parseFloat(message.meterValue);
+      // 1. Extract Energy.Active.Import.Register from meterValue
+      let currentWh = 0;
 
-      // 1. Get connector + station
+      for (const entry of message.meterValue) {
+        const energySample = entry.sampledValue?.find(
+          sv => sv.measurand === "Energy.Active.Import.Register" && sv.value != null
+        );
+        if (energySample) {
+          currentWh = parseFloat(energySample.value);
+          break; // Use the first valid one
+        }
+      }
+
+      if (currentWh === 0) return console.warn("No valid energy reading found");
+
+      // 2. Get connector and station
       const connectorRes = await db.query(`
         SELECT id, station_id FROM connectors WHERE ocpp_id = $1
       `, [ocppId]);
@@ -209,18 +295,25 @@ client.on("message", async (topic, messageBuffer) => {
 
       const { id: connectorId, station_id: stationId } = connectorRes.rows[0];
 
-      // 2. Get latest ongoing session
+      // 3. Get ongoing session
       const sessionRes = await db.query(`
-        SELECT id, user_id FROM charging_sessions
+        SELECT id, user_id, energy_used FROM charging_sessions
         WHERE connector_id = $1 AND status = 'ongoing'
         ORDER BY created_at DESC LIMIT 1
       `, [connectorId]);
 
       if (sessionRes.rows.length === 0) return console.warn("No ongoing session for connector", connectorId);
 
-      const { id: sessionId, user_id: userId } = sessionRes.rows[0];
+      const { id: sessionId, user_id: userId, energy_used: previousWh } = sessionRes.rows[0];
 
-      // 3. Get station pricing
+      const deltaWh = currentWh - (previousWh || 0);
+
+      if (deltaWh <= 0) {
+        console.warn("Meter value decreased or unchanged — skipping billing.");
+        return;
+      }
+
+      // 4. Get dynamic pricing
       const stationRes = await db.query(`
         SELECT dynamic_pricing FROM charging_stations WHERE id = $1
       `, [stationId]);
@@ -239,28 +332,53 @@ client.on("message", async (topic, messageBuffer) => {
         }
       }
 
-      // 4. Compute energy & cost
-      const meterKWh = meterWh / 1000;
+      // 5. Compute incremental cost
+      const meterKWh = deltaWh / 1000;
       const cost = parseFloat((meterKWh * rate).toFixed(2));
 
-      // 5. Deduct cost from user’s wallet
+      // 6. Deduct cost from user’s wallet
+      // 6. Check user's wallet balance first
+      const walletCheck = await db.query(`
+  SELECT balance FROM wallets
+  WHERE user_id = $1 AND is_default = TRUE AND status = 'active'
+`, [userId]);
+
+      if (walletCheck.rows.length === 0) {
+        return console.warn("Wallet not found or inactive for user", userId);
+      }
+
+      const currentBalance = parseFloat(walletCheck.rows[0].balance);
+
+      if (currentBalance < cost) {
+        console.warn(`User ${userId} has insufficient balance (₹${currentBalance}), required ₹${cost}`);
+
+        // Optional: log or notify
+        publishToConnector(ocppId, {
+          action: "StopTransaction",
+          reason: "InsufficientFunds",
+          message: "Charging stopped due to low wallet balance."
+        });
+
+        return; // Exit here, do not deduct or update session
+      }
+
+      // 7. Deduct cost from wallet
       const walletUpdate = await db.query(`
-        UPDATE wallets
-        SET balance = balance - $1
-        WHERE user_id = $2 AND is_default = TRUE AND status = 'active'
-        RETURNING balance
-      `, [cost, userId]);
+               UPDATE wallets
+               SET balance = balance - $1
+               WHERE user_id = $2 AND is_default = TRUE AND status = 'active'
+               RETURNING balance
+            `, [cost, userId]);
 
-      if (walletUpdate.rows.length === 0) return console.warn("Wallet not found for user", userId);
 
-      // 6. Update charging session
+      // 7. Update charging session with new total energy + cost
       await db.query(`
         UPDATE charging_sessions
-        SET energy_used = $1, cost = $2, updated_at = NOW()
+        SET energy_used = $1, cost = cost + $2, updated_at = NOW()
         WHERE id = $3
-      `, [meterKWh, cost, sessionId]);
+      `, [currentWh, cost, sessionId]);
 
-      // 7. Distribute revenue to station partners
+      // 8. Revenue sharing with partners
       const partnersRes = await db.query(`
         SELECT user_id, share_percentage
         FROM user_station_partners
@@ -279,13 +397,15 @@ client.on("message", async (topic, messageBuffer) => {
         console.log(`Credited ₹${shareAmount} to partner ${partner.user_id}`);
       }
 
-      console.log(`Session ${sessionId} updated with ${meterKWh} kWh and cost ₹${cost}`);
+      console.log(`Session ${sessionId}: +${deltaWh}Wh, ₹${cost} billed.`);
+
     }
 
   } catch (err) {
     console.error("Error handling metervalue:", err.message);
   }
 });
+
 
 function publishToConnector(thingId, messageObj) {
 
