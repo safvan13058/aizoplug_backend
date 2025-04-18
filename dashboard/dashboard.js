@@ -52,7 +52,7 @@ const allowedRoles = ['admin','staff'];
 
 // Add partner to a station
 dashboard.post(
-  'api/station/:station_id/partners',
+  '/api/station/:station_id/partners',
   validateJwt,
   authorizeRoles(...allowedRoles),
   addPartner
@@ -60,7 +60,7 @@ dashboard.post(
 
 // Update a partner
 dashboard.put(
-  'api/station/:station_id/partners/:user_id',
+  '/api/station/:station_id/partners/:user_id',
   validateJwt,
   authorizeRoles(...allowedRoles),
   updatePartner
@@ -68,7 +68,7 @@ dashboard.put(
 
 // Delete a partner
 dashboard.delete(
-  'api/station/:station_id/partners/:user_id',
+  '/api/station/:station_id/partners/:user_id',
   validateJwt,
   authorizeRoles(...allowedRoles),
   deletePartner
@@ -76,7 +76,7 @@ dashboard.delete(
 
 // List all partners
 dashboard.get(
-  'api/station/:station_id/partners',
+  '/api/station/:station_id/partners',
   validateJwt,
   authorizeRoles('admin', 'staff', 'dealer'),
   listPartners
