@@ -150,7 +150,7 @@ const {addstations} = require('../dashboard/stations');
  app.post(
    '/api/add/station',
    validateJwt,
-   authorizeRoles('admin','staff','dealer','host'),
+   authorizeRoles('admin','staff','dealer','host', 'customer'),
    addstations
  );
 
