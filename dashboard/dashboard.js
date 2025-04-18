@@ -68,7 +68,11 @@ dashboard.delete(
 dashboard.get(
   'api/station/:station_id/partners',
   validateJwt,
-  authorizeRoles('admin', 'staff', 'dealer', 'customer'),
+  authorizeRoles('admin', 'staff', 'dealer'),
   listPartners
 );
+// ---------------------------------------------------------------------------
+// ----------------------stations-------------------------------------
+
+
 module.exports = dashboard

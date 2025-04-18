@@ -134,7 +134,8 @@ const spent= async (req, res) => {
     }
   };
   
-const userwallethistory= async (req, res) => {
+
+  const userwallethistory= async (req, res) => {
     const userId = req.user.id;
   
     try {

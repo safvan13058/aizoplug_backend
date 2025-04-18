@@ -143,4 +143,15 @@ app.get('/api/display/wallet/history',
 app.post('/api/topup/wallet/:walletId',
         validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
         , topup);
+
+// --------------------------------------------------------------------
+const { addstataions} = require('../dashboard/stations');
+
+ app.post(
+   'api/add/station',
+   validateJwt,
+   authorizeRoles('admin','staff','dealer','host'),
+   addstataions
+ );
+ 
 module.exports = app
