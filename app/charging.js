@@ -6,8 +6,8 @@ const db = require('../middelware/db'); // your PostgreSQL connection instance
 const { publishToConnector } = require('./eventcharger')
 const { validateJwt, authorizeRoles } = require('../middelware/auth')
 router.post('/start',
-   validateJwt,
-   authorizeRoles('admin', 'customer', 'staff', 'dealer'),
+  validateJwt,
+  authorizeRoles('admin', 'customer', 'staff', 'dealer'),
   async (req, res) => {
     const {
       user_id,
@@ -62,15 +62,27 @@ router.post('/start',
 
 
       // 4. Publish MQTT message to start charger
-      const topic = `${connector_id}/out`;
+      // 3. Get ocpp_id from connector_id
+      const connectorRes = await db.query(`
+         SELECT ocpp_id FROM connectors
+         WHERE id = $1
+        `, [connector_id]);
+
+      if (connectorRes.rows.length === 0) {
+        throw new Error('Connector not found.');
+      }
+
+      const ocpp_id = connectorRes.rows[0].ocpp_id;
+
+
       const mqttMessage = {
         action: "RemoteStartTransaction",
         data: {
-          connectorId: connector_id, // This may need to be dynamic
+          connectorId: 1, // This may need to be dynamic
           idTag: `${user_id}`
         }
       };
-      publishToConnector(connector_id, mqttMessage)
+      publishToConnector( ocpp_id, mqttMessage)
 
       await db.query('COMMIT');
 
