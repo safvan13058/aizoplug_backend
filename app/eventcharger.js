@@ -199,43 +199,38 @@ client.on("message", async (topic, messageBuffer) => {
       const [ocppId] = topic.split("/");
 
       const meterWh = parseFloat(message.meterValue);
-      // const meterKWh = meterWh / 1000;
 
-      // 1. Get connector
       // 1. Get connector + station
       const connectorRes = await db.query(`
-  SELECT id, station_id FROM connectors WHERE ocpp_id = $1
-`, [ocppId]);
+        SELECT id, station_id FROM connectors WHERE ocpp_id = $1
+      `, [ocppId]);
 
       if (connectorRes.rows.length === 0) return console.warn("No connector found for", ocppId);
 
       const { id: connectorId, station_id: stationId } = connectorRes.rows[0];
 
-      // 2. Get latest ongoing session for that connector
-      const sessionRes = await db.query(
-        `SELECT id, user_id FROM charging_sessions
-           WHERE connector_id = $1 AND status = 'ongoing'
-           ORDER BY created_at DESC LIMIT 1`,
-        [connectorId]
-      );
+      // 2. Get latest ongoing session
+      const sessionRes = await db.query(`
+        SELECT id, user_id FROM charging_sessions
+        WHERE connector_id = $1 AND status = 'ongoing'
+        ORDER BY created_at DESC LIMIT 1
+      `, [connectorId]);
+
       if (sessionRes.rows.length === 0) return console.warn("No ongoing session for connector", connectorId);
 
-      const session = sessionRes.rows[0];
-      const sessionId = session.id;
-      const userId = session.user_id;
+      const { id: sessionId, user_id: userId } = sessionRes.rows[0];
 
-      // 3. Calculate cost
+      // 3. Get station pricing
       const stationRes = await db.query(`
         SELECT dynamic_pricing FROM charging_stations WHERE id = $1
       `, [stationId]);
-      
+
       const pricing = stationRes.rows[0]?.dynamic_pricing;
-      let rate = pricing?.base_rate || 10; // fallback
-      
+      let rate = pricing?.base_rate || 10;
+
       if (pricing?.time_slots) {
         const now = new Date();
-        const currentTime = now.toTimeString().substring(0, 5); // "HH:MM"
-      
+        const currentTime = now.toTimeString().substring(0, 5); // HH:MM
         for (const slot of pricing.time_slots) {
           if (currentTime >= slot.start && currentTime <= slot.end) {
             rate = slot.rate;
@@ -243,29 +238,46 @@ client.on("message", async (topic, messageBuffer) => {
           }
         }
       }
-      
-      // 3. Compute energy in kWh
+
+      // 4. Compute energy & cost
       const meterKWh = meterWh / 1000;
-      // const cost = parseFloat((meterKWh * rate).toFixed(2));
       const cost = parseFloat((meterKWh * rate).toFixed(2));
 
-      // 4. Deduct cost from user’s wallet
-      const walletUpdate = await db.query(
-        `UPDATE wallets
-           SET balance = balance - $1
-           WHERE user_id = $2 AND is_default = TRUE AND status = 'active'
-           RETURNING balance`,
-        [cost, userId]
-      );
+      // 5. Deduct cost from user’s wallet
+      const walletUpdate = await db.query(`
+        UPDATE wallets
+        SET balance = balance - $1
+        WHERE user_id = $2 AND is_default = TRUE AND status = 'active'
+        RETURNING balance
+      `, [cost, userId]);
+
       if (walletUpdate.rows.length === 0) return console.warn("Wallet not found for user", userId);
 
-      // 5. Update charging session
-      await db.query(
-        `UPDATE charging_sessions
-           SET energy_used = $1, cost = $2, updated_at = NOW()
-           WHERE id = $3`,
-        [meterKWh, cost, sessionId]
-      );
+      // 6. Update charging session
+      await db.query(`
+        UPDATE charging_sessions
+        SET energy_used = $1, cost = $2, updated_at = NOW()
+        WHERE id = $3
+      `, [meterKWh, cost, sessionId]);
+
+      // 7. Distribute revenue to station partners
+      const partnersRes = await db.query(`
+        SELECT user_id, share_percentage
+        FROM user_station_partners
+        WHERE station_id = $1
+      `, [stationId]);
+
+      for (const partner of partnersRes.rows) {
+        const shareAmount = parseFloat(((cost * partner.share_percentage) / 100).toFixed(2));
+
+        await db.query(`
+          UPDATE wallets
+          SET balance = balance + $1
+          WHERE user_id = $2 AND is_default = TRUE AND status = 'active'
+        `, [shareAmount, partner.user_id]);
+
+        console.log(`Credited ₹${shareAmount} to partner ${partner.user_id}`);
+      }
 
       console.log(`Session ${sessionId} updated with ${meterKWh} kWh and cost ₹${cost}`);
     }
@@ -274,6 +286,7 @@ client.on("message", async (topic, messageBuffer) => {
     console.error("Error handling metervalue:", err.message);
   }
 });
+
 
 
 
