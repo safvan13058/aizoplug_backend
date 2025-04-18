@@ -103,9 +103,6 @@ client.on("message", async (topic, message) => {
   }
 });
 
-
-
-
 async function updateConnectorStatus(ocppId, status) {
   try {
     // First: Check if the connector exists
@@ -198,7 +195,7 @@ client.on("message", async (topic, messageBuffer) => {
   try {
     const message = JSON.parse(messageBuffer.toString());
 
-    if (topic.includes("/in") && message?.meterValue != null) {
+    if (topic.includes("/") && message?.meterValue != null) {
       const [ocppId] = topic.split("/");
 
       const meterWh = parseFloat(message.meterValue);
@@ -283,7 +280,7 @@ client.on("message", async (topic, messageBuffer) => {
 
 function publishToConnector(thingId, messageObj) {
 
-  const topic = `${thingId}/out`; // e.g., "connector001/out"
+  const topic = `${thingId}/in`; // e.g., "connector001/in"
   const message = JSON.stringify(messageObj);
   client.publish(topic, message, { qos: 1 }, (err) => {
     if (err) {

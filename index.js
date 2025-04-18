@@ -1,12 +1,27 @@
 const express = require('express');
 const app = express();
 const db = require('./middelware/db')
+
+
+
+
+
+
+
 const appbackend = require('./app/app')
 app.use('/app', appbackend)
+
 const dashboard = require('./dashboard/dashboard')
 app.use('/dashboard', dashboard)
+
 const usermanage = require('./app/usermange')
 app.use('/user',usermanage)
+
+
+
+const charging = require('./app/charging')
+app.use('/charging',charging)
+
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
