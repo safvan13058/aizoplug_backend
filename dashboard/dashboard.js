@@ -30,6 +30,16 @@ dashboard.post('/insert/charger', async (req, res) => {
     }
 });
 // --------------------------------station users----------------------------
+const {addstations} = require('./stations');
+dashboard.get('/working', (req, res) => {
+  res.send('app Server is working!');
+});
+dashboard.post(
+   '/api/add/station',
+   validateJwt,
+   authorizeRoles('admin','staff','dealer','host', 'customer'),
+   addstations
+ );
 
 const {
     addPartner,
