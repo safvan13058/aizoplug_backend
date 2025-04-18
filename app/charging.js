@@ -99,22 +99,52 @@ router.post('/start',
 
 // POST /api/charging-sessions/stop
 router.post('/stop', async (req, res) => {
-  const { ocppId } = req.body;
-  try {
+  const { connector_id } = req.body;
 
+  try {
+    // 1. Fetch ocpp_id from connector_id
+    const connectorRes = await db.query(`
+      SELECT ocpp_id FROM connectors
+      WHERE id = $1
+    `, [connector_id]);
+
+    if (connectorRes.rows.length === 0) {
+      throw new Error('Connector not found.');
+    }
+
+    const ocppId = connectorRes.rows[0].ocpp_id;
+
+    // 2. Get the latest transaction/session ID if needed
+    // Replace this logic with actual active session query if required
+    const sessionRes = await db.query(`
+      SELECT id FROM charging_sessions
+      WHERE connector_id = $1 AND status = 'ongoing'
+      ORDER BY created_at DESC
+      LIMIT 1
+    `, [connector_id]);
+
+    if (sessionRes.rows.length === 0) {
+      throw new Error('No ongoing session found for this connector.');
+    }
+
+    const transactionId = sessionRes.rows[0].id;
+
+    // 3. Publish MQTT RemoteStopTransaction
     const mqttMessage = {
       action: "RemoteStopTransaction",
       data: {
-        transactionId: 1,
+        transactionId: transactionId
       }
     };
+
     publishToConnector(ocppId, mqttMessage);
+
     res.status(200).json({
-      message: 'Charging session stopped and completed.',
+      message: 'Charging session stop command sent successfully.',
+      transactionId: transactionId
     });
 
   } catch (err) {
-    await db.query('ROLLBACK');
     res.status(400).json({ error: err.message });
   }
 });
