@@ -87,13 +87,13 @@ client.on("message", async (topic, messageBuffer) => {
 
       if (status === "connected") {
         console.log(`✅ [${thingName}] is CONNECTED (from desired state).`);
-        await updateConnectorStatus(thingName, "connected");
+        await updateConnectorstate(thingName, "connected");
       } else if (status === "disconnected") {
         console.log(`❌ [${thingName}] is DISCONNECTED (from desired state).`);
-        await updateConnectorStatus(thingName, "disconnected");
+        await updateConnectorstate(thingName, "disconnected");
       } else {
         console.log(`ℹ️ [${thingName}] status changed to ${status} (unhandled).`);
-        await updateConnectorStatus(thingName, status);
+        await updateConnectorstate(thingName, status);
       }
     }
   }
