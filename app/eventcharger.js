@@ -69,23 +69,41 @@ client.on("connect", () => {
 client.on("message", async (topic, message) => {
   try {
     const payload = JSON.parse(message.toString());
-    console.log("Received message:", payload);
+    console.log("Received message on topic:", topic);
+    console.log("Payload:", payload);
 
-    // Example structure of payload
-    const ocppId = payload.ocpp_id;      // e.g., "connector-001"
-    const status = payload.status;       // e.g., "Available", "Charging"
+    // Topic format: "<ocppId>/out" or "<ocppId>/in"
+    const [ocppId, direction] = topic.split('/');
 
-    if (!ocppId || !status) {
-      console.warn("Incomplete message payload:", payload);
+    if (!ocppId || direction !== 'out') {
+      // Only handle status updates from <ocppId>/out
       return;
     }
 
-    // Update database
+    // Ensure it's a StatusNotification action
+    if (payload.action !== "StatusNotification" || !payload.payload) {
+      return;
+    }
+
+    const { connectorId, status, errorCode, timestamp, vendorId, vendorErrorCode } = payload.payload;
+
+    if (typeof status === 'undefined') {
+      // Skip if there's no status value
+      return;
+    }
+
+    // You could use additional fields here if needed
+    console.log(`OCPP ID: ${ocppId}, Connector: ${connectorId}, Status: ${status}`);
+
+    // Update the connector status (your custom function)
     await updateConnectorStatus(ocppId, status);
+
   } catch (err) {
-    console.error("Error parsing message:", err);
+    console.error("Error handling MQTT message:", err);
   }
 });
+
+
 
 
 async function updateConnectorStatus(ocppId, status) {
@@ -264,6 +282,7 @@ client.on("message", async (topic, messageBuffer) => {
 
 
 function publishToConnector(thingId, messageObj) {
+
   const topic = `${thingId}/out`; // e.g., "connector001/out"
   const message = JSON.stringify(messageObj);
   client.publish(topic, message, { qos: 1 }, (err) => {
@@ -273,6 +292,7 @@ function publishToConnector(thingId, messageObj) {
       console.log(`Published message to ${topic}:`, message);
     }
   });
+
 }
 
 
