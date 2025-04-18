@@ -10,7 +10,6 @@ router.post('/start',
   authorizeRoles('admin', 'customer', 'staff', 'dealer'),
   async (req, res) => {
     const {
-      user_id,
       vehicle_id,
       connector_id,
       payment_method,
@@ -19,7 +18,7 @@ router.post('/start',
       sponsored_by,
       sponsorship_note
     } = req.body;
-
+    const user_id=req.user.id;
     try {
       await db.query('BEGIN');
 
