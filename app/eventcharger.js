@@ -164,7 +164,7 @@ async function updateConnectorstate(ocppId, state) {
     const checkResult = await db.query(checkQuery, [ocppId]);
 
     if (checkResult.rowCount === 0) {
-      console.warn(`⚠️ Connector with ocpp_id "${ocppId}" not found. Skipping update.`);
+      // console.warn(`⚠️ Connector with ocpp_id "${ocppId}" not found. Skipping update.`);
       return;
     }
 
