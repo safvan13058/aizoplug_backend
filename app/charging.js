@@ -1,6 +1,7 @@
 // POST /api/charging-sessions/start
 const express = require('express');
 const router = express.Router();
+router.use(express.json());
 const db = require('../middelware/db'); // your PostgreSQL connection instance
 const { publishToConnector } = require('./eventcharger')
 const { validateJwt, authorizeRoles } = require('../middelware/auth')
