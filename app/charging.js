@@ -43,7 +43,7 @@ router.post('/start',
       const sessionRes = await db.query(`
       INSERT INTO charging_sessions (
         user_id, vehicle_id, connector_id,
-        payment_method, status, cost,
+        payment_method, status,
         promotion_id, sponsored_by, sponsorship_note
       )
       VALUES ($1, $2, $3, $4, 'ongoing', $5, $6, $7)
