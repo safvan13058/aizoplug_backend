@@ -25,7 +25,10 @@ app.use('/charging',charging)
 const { swaggerUi, specs } = require("./swaggerdoc/swagger.js");
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
-
+app.get("/", (req, res) => {
+    res.send("Server is running aizoplug");
+  });
+  
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
