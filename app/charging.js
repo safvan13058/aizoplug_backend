@@ -18,7 +18,7 @@ router.post('/start',
       sponsored_by,
       sponsorship_note
     } = req.body;
-    const user_id=req.user.id;
+    const user_id = req.user.id;
     try {
       await db.query('BEGIN');
 
@@ -38,6 +38,28 @@ router.post('/start',
       if (parseFloat(wallet.balance) < parseFloat(estimated_cost)) {
         throw new Error('Insufficient wallet balance to start session.');
       }
+
+      const connectorRes = await db.query(`
+        SELECT ocpp_id FROM connectors
+        WHERE id = $1
+       `, [connector_id]);
+
+     if (connectorRes.rows.length === 0) {
+       throw new Error('Connector not found.');
+     }
+
+     const { ocpp_id, status: connectorStatus, state: connectorState } = connectorRes.rows[0];
+
+     // Ensure the charger is physically connected and logically ready to start
+     if (connectorState !== 'connected') {
+       throw new Error('Soryy...,The connector is not functional');
+     }
+     
+     if (connectorStatus !== 'preparing') {
+       throw new Error('Connector is not ready ,Please connect the connector to the vehicle before starting the session.');
+     }
+
+
 
       // 2. Create the session
       const sessionRes = await db.query(`
@@ -62,18 +84,7 @@ router.post('/start',
 
       // 4. Publish MQTT message to start charger
       // 3. Get ocpp_id from connector_id
-      const connectorRes = await db.query(`
-         SELECT ocpp_id FROM connectors
-         WHERE id = $1
-        `, [connector_id]);
-
-      if (connectorRes.rows.length === 0) {
-        throw new Error('Connector not found.');
-      }
-
-      const ocpp_id = connectorRes.rows[0].ocpp_id;
-
-
+    
       const mqttMessage = {
         action: "RemoteStartTransaction",
         data: {
@@ -81,7 +92,7 @@ router.post('/start',
           idTag: `${user_id}`
         }
       };
-      publishToConnector( ocpp_id, mqttMessage)
+      publishToConnector(ocpp_id, mqttMessage)
 
       await db.query('COMMIT');
 
