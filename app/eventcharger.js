@@ -188,9 +188,9 @@ async function updateConnectorstate(ocppId, state) {
       WHERE ocpp_id = $2
     `;
     await db.query(updateQuery, [state, ocppId]);
-    console.log(`🔄 Updated connector ${ocppId} to status "${state}".`);
+    console.log(`🔄 Updated connector ${ocppId} to state "${state}".`);
   } catch (err) {
-    console.error("❌ Error updating connector status:", err);
+    console.error("❌ Error updating connector state:", err);
   }
 }
 
