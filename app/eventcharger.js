@@ -65,38 +65,38 @@ client.on("connect", () => {
     else console.log("Subscribed to meter value updates");
   });
 
-  // client.subscribe("$aws/things/+/shadow/update/delta", { qos: 1 }, (err) => {
-  //   if (err) {
-  //     console.error("Failed to subscribe with wildcard:", err);
-  //   } else {
-  //     console.log("🔍 Listening for all device shadow status changes (delta)...");
-  //   }
-  // });
+  client.subscribe("$aws/things/+/shadow/update/delta", { qos: 1 }, (err) => {
+    if (err) {
+      console.error("Failed to subscribe with wildcard:", err);
+    } else {
+      console.log("🔍 Listening for all device shadow status changes (delta)...");
+    }
+  });
   
 });
 
-// client.on("message", async (topic, messageBuffer) => {
-//   if (topic.includes("/shadow/update/delta")) {
-//     const delta = JSON.parse(messageBuffer.toString());
+client.on("message", async (topic, messageBuffer) => {
+  if (topic.includes("/shadow/update/delta")) {
+    const delta = JSON.parse(messageBuffer.toString());
 
-//     // Extract the thingName from the topic
-//     const thingName = topic.split("/")[2]; // This will be your ocppId
-//     if (delta.state && delta.state.desired && delta.state.desired.status) {
-//       const status = delta.state.desired.status;
+    // Extract the thingName from the topic
+    const thingName = topic.split("/")[2]; // This will be your ocppId
+    if (delta.state && delta.state.desired && delta.state.desired.status) {
+      const status = delta.state.desired.status;
 
-//       if (status === "connected") {
-//         console.log(`✅ [${thingName}] is CONNECTED (from desired state).`);
-//         await updateConnectorstate(thingName, "connected");
-//       } else if (status === "disconnected") {
-//         console.log(`❌ [${thingName}] is DISCONNECTED (from desired state).`);
-//         await updateConnectorstate(thingName, "disconnected");
-//       } else {
-//         console.log(`ℹ️ [${thingName}] status changed to ${status} (unhandled).`);
-//         await updateConnectorstate(thingName, status);
-//       }
-//     }
-//   }
-// });
+      if (status === "connected") {
+        console.log(`✅ [${thingName}] is CONNECTED (from desired state).`);
+        await updateConnectorstate(thingName, "connected");
+      } else if (status === "disconnected") {
+        console.log(`❌ [${thingName}] is DISCONNECTED (from desired state).`);
+        await updateConnectorstate(thingName, "disconnected");
+      } else {
+        console.log(`ℹ️ [${thingName}] status changed to ${status} (unhandled).`);
+        await updateConnectorstate(thingName, status);
+      }
+    }
+  }
+});
 
 client.on("message", async (topic, message) => {
   try {
