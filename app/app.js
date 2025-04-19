@@ -82,7 +82,7 @@ app.get('/api/chargers/location', async (req, res) => {
                   dynamic_pricing: row.dynamic_pricing,
                   created_at: row.station_created_at,
                   updated_at: row.updated_at,
-                  distance:distanceInKm,
+                  distance:`${distanceInKm} Km`,
                   connectors: []
               };
           }
