@@ -25,7 +25,7 @@ app.use('/charging',charging)
 const { swaggerUi, specs } = require("./swaggerdoc/swagger.js");
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
-app.get("/", (req, res) => {
+app.get("/test", (req, res) => {
     res.send("Server is running aizoplug");
   });
   
