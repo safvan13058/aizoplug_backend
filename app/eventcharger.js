@@ -275,8 +275,9 @@ client.on("message", async (topic, messageBuffer) => {
     const meterValues = message?.payload?.meterValue;
 
     if (!ocppId || !Array.isArray(meterValues)) {
-      return console.warn("Invalid topic or meter values");
+      return; // silently skip
     }
+    
 
     // 1. Extract Energy.Active.Import.Register
     let currentWh = 0;
