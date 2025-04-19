@@ -79,6 +79,8 @@ client.on("message", async (topic, messageBuffer) => {
   if (topic.includes("/shadow/update/delta")) {
     const delta = JSON.parse(messageBuffer.toString());
 
+    console.log("delta",delta)
+
     // Extract the thingName from the topic
     const thingName = topic.split("/")[2]; // This will be your ocppId
     if (delta.state && delta.state.desired && delta.state.desired.status) {
