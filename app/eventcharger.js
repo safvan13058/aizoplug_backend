@@ -79,10 +79,20 @@ client.on("message", async (topic, messageBuffer) => {
   if (topic.includes("/shadow/update/delta")) {
     const delta = JSON.parse(messageBuffer.toString());
 
-    console.log("delta",delta)
+      // Extract the thingName from the topic
+      const thingName = topic.split("/")[2]; // This will be your ocppId
 
-    // Extract the thingName from the topic
-    const thingName = topic.split("/")[2]; // This will be your ocppId
+      // ✅ Check if the connector exists
+      const res = await db.query(`
+        SELECT id FROM connectors WHERE ocpp_id = $1
+      `, [thingName]);
+  
+      if (res.rows.length === 0) {
+        // thingName (ocpp_id) not found — silently skip
+        return;
+      }
+      console.log("delta of charger==",delta)
+
     if (delta.state && delta.state.desired && delta.state.desired.status) {
       const status = delta.state.desired.status;
 
