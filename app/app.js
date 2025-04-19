@@ -22,32 +22,92 @@ function haversine(lat1, lon1, lat2, lon2) {
 
 // ..................................... find chargers .............................................................
 
-app.get('/api/chargers', async (req, res) => {
-    // console.log("/api/chargers",req.body);
-    try {
-        const { lat, long, radius } = req.query;
+app.get('/api/chargers/location', async (req, res) => {
+  try {
+      const { lat, long, radius } = req.query;
 
-        if (!lat || !long || !radius) {
-            return res.status(400).json({ error: 'lat, long, and radius are required' });
-        }
+      if (!lat || !long || !radius) {
+          return res.status(400).json({ error: 'lat, long, and radius are required' });
+      }
 
-        // Fetch all chargers from the database
-        const result = await db.query("SELECT * FROM chargerstatus");
+      // Fetch stations and their connectors
+      const query = `
+          SELECT 
+              cs.id AS station_id,
+              cs.name,
+              cs.latitude,
+              cs.longitude,
+              cs.amenities,
+              cs.contact_info,
+              cs.dynamic_pricing,
+              cs.created_at AS station_created_at,
+              cs.updated_at,
+              c.id AS connector_id,
+              c.type,
+              c.power_output,
+              c.state,
+              c.status,
+              c.ocpp_id,
+              c.last_updated,
+              c.created_at AS connector_created_at
+          FROM charging_stations cs
+          LEFT JOIN connectors c ON cs.id = c.station_id
+      `;
+      const result = await db.query(query);
 
-        // Filter chargers based on distance calculation
-        const filteredChargers = result.rows
-            .map(charger => ({
-                ...charger,
-                distance: haversine(parseFloat(lat), parseFloat(long), charger.lat, charger.long)
-            }))
-            .filter(charger => charger.distance <= parseFloat(radius)) // Keep only chargers within radius
-            .sort((a, b) => a.distance - b.distance); // Sort by nearest first
+      // Group connectors under their stations
+      const stationsMap = {};
 
-        res.json(filteredChargers);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Server error' });
+      for (let row of result.rows) {
+          const stationId = row.station_id;
+
+          if (!stationsMap[stationId]) {
+              const distance = haversine(parseFloat(lat), parseFloat(long), row.latitude, row.longitude);
+
+              // Skip if distance exceeds radius
+              if (distance > parseFloat(radius)) continue;
+
+              stationsMap[stationId] = {
+                  id: stationId,
+                  name: row.name,
+                  latitude: row.latitude,
+                  longitude: row.longitude,
+                  amenities: row.amenities,
+                  contact_info: row.contact_info,
+                  dynamic_pricing: row.dynamic_pricing,
+                  created_at: row.station_created_at,
+                  updated_at: row.updated_at,
+                  distance,
+                  connectors: []
+              };
+          }
+
+          // Add connector to the station
+          if (row.connector_id) {
+              stationsMap[stationId].connectors.push({
+                  id: row.connector_id,
+                  type: row.type,
+                  power_output: row.power_output,
+                  state: row.state,
+                  status: row.status,
+                  ocpp_id: row.ocpp_id,
+                  last_updated: row.last_updated,
+                  created_at: row.connector_created_at
+              });
+          }
+      }
+
+      // Sort stations by distance
+      const filteredStations = Object.values(stationsMap).sort((a, b) => a.distance - b.distance);
+      if (filteredStations.length === 0) {
+        return res.status(200).json({ message: "No charging stations found within the specified radius.", data: [] });
     }
+    
+      res.json(filteredStations);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // ............................ wallet test ..........................................
