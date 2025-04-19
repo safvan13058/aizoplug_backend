@@ -46,14 +46,14 @@ router.post('/start',
         payment_method, status, cost,
         promotion_id, sponsored_by, sponsorship_note
       )
-      VALUES ($1, $2, $3, $4, 'ongoing', $5, $6, $7, $8)
+      VALUES ($1, $2, $3, $4, 'ongoing', $5, $6, $7)
       RETURNING *
     `, [
         user_id,
         vehicle_id,
         connector_id,
         payment_method,
-        estimated_cost,
+        // estimated_cost,
         promotion_id,
         sponsored_by,
         sponsorship_note
