@@ -91,11 +91,11 @@ client.on("message", async (topic, messageBuffer) => {
         // thingName (ocpp_id) not found — silently skip
         return;
       }
-      console.log("delta of charger==",delta)
+      // console.log("delta of charger==",delta)
 
       if (delta.state && delta.state.status) {
         const status = delta.state.status;
-        console.log("Status from delta.state:", status);
+        // console.log("Status from delta.state:", status);
       
       
 
