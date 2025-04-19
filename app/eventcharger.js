@@ -93,8 +93,11 @@ client.on("message", async (topic, messageBuffer) => {
       }
       console.log("delta of charger==",delta)
 
-    if (delta.state && delta.state.desired && delta.state.desired.status) {
-      const status = delta.state.desired.status;
+      if (delta.state && delta.state.status) {
+        const status = delta.state.status;
+        console.log("Status from delta.state:", status);
+      
+      
 
       if (status === "connected") {
         console.log(`✅ [${thingName}] is CONNECTED (from desired state).`);
