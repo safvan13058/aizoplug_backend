@@ -787,6 +787,295 @@ const Swaggerdoc = {
         }
       }
     },
+    "/app/api/add/wallet/": {
+      "post": {
+        "summary": "Create a new wallet for the user",
+        "tags": ["Wallet"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "wallet_type": {
+                    "type": "string",
+                    "example": "general"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "example": "INR"
+                  },
+                  "is_default": {
+                    "type": "boolean",
+                    "example": false
+                  }
+                },
+                "required": []
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Wallet created successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Wallet created successfully"
+                      },
+                      "wallet": {
+                        "type": "object",
+                        "properties": {
+                          "user_id": {
+                            "type": "integer",
+                            "example": 101
+                          },
+                          "wallet_number": {
+                            "type": "string",
+                            "example": "b6f8b317-40f6-4c50-9cd2-139a43a8d634"
+                          },
+                          "wallet_type": {
+                            "type": "string",
+                            "example": "general"
+                          },
+                          "currency": {
+                            "type": "string",
+                            "example": "INR"
+                          },
+                          "is_default": {
+                            "type": "boolean",
+                            "example": false
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error"
+            }
+          }
+        }
+      }
+    },
+    "/app/api/display/wallet/": {
+      "get": {
+        "summary": "Get all wallets for the authenticated user",
+        "tags": ["Wallet"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of wallets for the user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user_id": {
+                      "type": "integer",
+                      "example": 101
+                    },
+                    "wallets": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "wallet_number": {
+                            "type": "string",
+                            "example": "b6f8b317-40f6-4c50-9cd2-139a43a8d634"
+                          },
+                          "wallet_type": {
+                            "type": "string",
+                            "example": "general"
+                          },
+                          "currency": {
+                            "type": "string",
+                            "example": "INR"
+                          },
+                          "balance": {
+                            "type": "number",
+                            "example": 1000
+                          },
+                          "is_default": {
+                            "type": "boolean",
+                            "example": false
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No wallets found for the user"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/app/api/display/wallet/history": {
+      "get": {
+        "summary": "Get transaction history for the authenticated user",
+        "tags": ["Wallet"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction history for the user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user_id": {
+                      "type": "integer",
+                      "example": 101
+                    },
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "transaction_id": {
+                            "type": "integer",
+                            "example": 1001
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 500
+                          },
+                          "transaction_type": {
+                            "type": "string",
+                            "example": "top-up"
+                          },
+                          "status": {
+                            "type": "string",
+                            "example": "completed"
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "example": "2025-04-19T14:30:00Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/app/api/topup/wallet/{walletId}": {
+      "post": {
+        "summary": "Top-up a wallet",
+        "tags": ["Wallet"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "walletId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "b6f8b317-40f6-4c50-9cd2-139a43a8d634"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "number",
+                    "example": 1000
+                  }
+                },
+                "required": ["amount"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Wallet topped up successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Wallet topped up with ₹1000"
+                    },
+                    "transaction": {
+                      "type": "object",
+                      "properties": {
+                        "transaction_id": {
+                          "type": "integer",
+                          "example": 1001
+                        },
+                        "amount": {
+                          "type": "number",
+                          "example": 1000
+                        },
+                        "transaction_type": {
+                          "type": "string",
+                          "example": "top-up"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "completed"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Wallet not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
 };
 
 module.exports = Swaggerdoc;
