@@ -46,7 +46,7 @@ const Swaggerdoc = {
                     example: "Charging station created successfully"
                   },
                   station: {
-                    $ref: "#/components/schemas/ChargingStation"
+                    // $ref: "#/components/schemas/ChargingStation"
                   }
                 }
               }
