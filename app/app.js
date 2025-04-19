@@ -62,10 +62,13 @@ app.get('/api/chargers/location', async (req, res) => {
           const stationId = row.station_id;
 
           if (!stationsMap[stationId]) {
-              const distance = haversine(parseFloat(lat), parseFloat(long), row.latitude, row.longitude);
-
+            const distance = parseFloat(
+              haversine(parseFloat(lat), parseFloat(long), row.latitude, row.longitude).toFixed(2)
+          );
+          
               // Skip if distance exceeds radius
-              if (distance > parseFloat(radius)) continue;
+              if (distance > parseFloat(radius) * 1000) continue;
+
 
               stationsMap[stationId] = {
                   id: stationId,
