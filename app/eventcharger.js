@@ -277,10 +277,12 @@ client.on("message", async (topic, messageBuffer) => {
     if (!ocppId || !Array.isArray(meterValues)) {
       return; // silently skip
     }
-    
+     
+    console.log(`metervalue${ocppId}==payload==${meterValues}`)
 
     // 1. Extract Energy.Active.Import.Register
     let currentWh = 0;
+
 
     for (const entry of meterValues) {
       const energySample = entry.sampledValue?.find(
