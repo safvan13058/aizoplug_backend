@@ -22,6 +22,10 @@ app.use('/user',usermanage)
 const charging = require('./app/charging')
 app.use('/charging',charging)
 
+const { swaggerUi, specs } = require("./swaggerdoc/swagger.js");
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
+
+
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
