@@ -269,143 +269,150 @@ client.on("message", async (topic, messageBuffer) => {
   try {
     const message = JSON.parse(messageBuffer.toString());
 
-    if (topic.includes("/") && Array.isArray(message?.meterValue)) {
-      const [ocppId] = topic.split("/");
+    const parts = topic.split("/");
+    const ocppId = parts[0]; // e.g. CP101 from CP101/out
 
-      // 1. Extract Energy.Active.Import.Register from meterValue
-      let currentWh = 0;
+    const meterValues = message?.payload?.meterValue;
 
-      for (const entry of message.meterValue) {
-        const energySample = entry.sampledValue?.find(
-          sv => sv.measurand === "Energy.Active.Import.Register" && sv.value != null
-        );
-        if (energySample) {
-          currentWh = parseFloat(energySample.value);
-          break; // Use the first valid one
-        }
-      }
-
-      if (currentWh === 0) return console.warn("No valid energy reading found");
-
-      // 2. Get connector and station
-      const connectorRes = await db.query(`
-        SELECT id, station_id FROM connectors WHERE ocpp_id = $1
-      `, [ocppId]);
-
-      if (connectorRes.rows.length === 0) return console.warn("No connector found for", ocppId);
-
-      const { id: connectorId, station_id: stationId } = connectorRes.rows[0];
-
-      // 3. Get ongoing session
-      const sessionRes = await db.query(`
-        SELECT id, user_id, energy_used FROM charging_sessions
-        WHERE connector_id = $1 AND status = 'ongoing'
-        ORDER BY created_at DESC LIMIT 1
-      `, [connectorId]);
-
-      if (sessionRes.rows.length === 0) return console.warn("No ongoing session for connector", connectorId);
-
-      const { id: sessionId, user_id: userId, energy_used: previousWh } = sessionRes.rows[0];
-
-      const deltaWh = currentWh - (previousWh || 0);
-
-      if (deltaWh <= 0) {
-        console.warn("Meter value decreased or unchanged — skipping billing.");
-        return;
-      }
-
-      // 4. Get dynamic pricing
-      const stationRes = await db.query(`
-        SELECT dynamic_pricing FROM charging_stations WHERE id = $1
-      `, [stationId]);
-
-      const pricing = stationRes.rows[0]?.dynamic_pricing;
-      let rate = pricing?.base_rate || 10;
-
-      if (pricing?.time_slots) {
-        const now = new Date();
-        const currentTime = now.toTimeString().substring(0, 5); // HH:MM
-        for (const slot of pricing.time_slots) {
-          if (currentTime >= slot.start && currentTime <= slot.end) {
-            rate = slot.rate;
-            break;
-          }
-        }
-      }
-
-      // 5. Compute incremental cost
-      const meterKWh = deltaWh / 1000;
-      const cost = parseFloat((meterKWh * rate).toFixed(2));
-
-      // 6. Deduct cost from user’s wallet
-      // 6. Check user's wallet balance first
-      const walletCheck = await db.query(`
-  SELECT balance FROM wallets
-  WHERE user_id = $1 AND is_default = TRUE AND status = 'active'
-`, [userId]);
-
-      if (walletCheck.rows.length === 0) {
-        return console.warn("Wallet not found or inactive for user", userId);
-      }
-
-      const currentBalance = parseFloat(walletCheck.rows[0].balance);
-
-      if (currentBalance < cost) {
-        console.warn(`User ${userId} has insufficient balance (₹${currentBalance}), required ₹${cost}`);
-
-        // Optional: log or notify
-        publishToConnector(ocppId, {
-          action: "StopTransaction",
-          reason: "InsufficientFunds",
-          message: "Charging stopped due to low wallet balance."
-        });
-
-        return; // Exit here, do not deduct or update session
-      }
-
-      // 7. Deduct cost from wallet
-      const walletUpdate = await db.query(`
-               UPDATE wallets
-               SET balance = balance - $1
-               WHERE user_id = $2 AND is_default = TRUE AND status = 'active'
-               RETURNING balance
-            `, [cost, userId]);
-
-
-      // 7. Update charging session with new total energy + cost
-      await db.query(`
-        UPDATE charging_sessions
-        SET energy_used = $1, cost = cost + $2, updated_at = NOW()
-        WHERE id = $3
-      `, [currentWh, cost, sessionId]);
-
-      // 8. Revenue sharing with partners
-      const partnersRes = await db.query(`
-        SELECT user_id, share_percentage
-        FROM user_station_partners
-        WHERE station_id = $1
-      `, [stationId]);
-
-      for (const partner of partnersRes.rows) {
-        const shareAmount = parseFloat(((cost * partner.share_percentage) / 100).toFixed(2));
-
-        await db.query(`
-          UPDATE wallets
-          SET balance = balance + $1
-          WHERE user_id = $2 AND is_default = TRUE AND status = 'active'
-        `, [shareAmount, partner.user_id]);
-
-        console.log(`Credited ₹${shareAmount} to partner ${partner.user_id}`);
-      }
-
-      console.log(`Session ${sessionId}: +${deltaWh}Wh, ₹${cost} billed.`);
-
+    if (!ocppId || !Array.isArray(meterValues)) {
+      return console.warn("Invalid topic or meter values");
     }
+
+    // 1. Extract Energy.Active.Import.Register
+    let currentWh = 0;
+
+    for (const entry of meterValues) {
+      const energySample = entry.sampledValue?.find(
+        sv => sv.measurand === "Energy.Active.Import.Register" && sv.value != null
+      );
+      if (energySample) {
+        currentWh = parseFloat(energySample.value);
+        if (isNaN(currentWh)) {
+          console.warn("Invalid energy value in message");
+          return;
+        }
+        break;
+      }
+    }
+
+    if (currentWh === 0) return console.warn("No valid energy reading found");
+
+    // 2. Get connector and station
+    const connectorRes = await db.query(`
+      SELECT id, station_id FROM connectors WHERE ocpp_id = $1
+    `, [ocppId]);
+
+    if (connectorRes.rows.length === 0) return console.warn("No connector found for", ocppId);
+
+    const { id: connectorId, station_id: stationId } = connectorRes.rows[0];
+
+    // 3. Get ongoing session
+    const sessionRes = await db.query(`
+      SELECT id, user_id, energy_used FROM charging_sessions
+      WHERE connector_id = $1 AND status = 'ongoing'
+      ORDER BY created_at DESC LIMIT 1
+    `, [connectorId]);
+
+    if (sessionRes.rows.length === 0) return console.warn("No ongoing session for connector", connectorId);
+
+    const { id: sessionId, user_id: userId, energy_used: previousWh } = sessionRes.rows[0];
+
+    const deltaWh = currentWh - (previousWh || 0);
+
+    if (deltaWh <= 0) {
+      console.warn("Meter value decreased or unchanged — skipping billing.");
+      return;
+    }
+
+    // 4. Get dynamic pricing
+    const stationRes = await db.query(`
+      SELECT dynamic_pricing FROM charging_stations WHERE id = $1
+    `, [stationId]);
+
+    const pricing = stationRes.rows[0]?.dynamic_pricing;
+    let rate = pricing?.base_rate || 10;
+
+    if (pricing?.time_slots) {
+      const now = new Date();
+      const currentTime = now.toTimeString().substring(0, 5); // HH:MM
+      for (const slot of pricing.time_slots) {
+        if (currentTime >= slot.start && currentTime <= slot.end) {
+          rate = slot.rate;
+          break;
+        }
+      }
+    }
+
+    // 5. Compute cost
+    const meterKWh = deltaWh / 1000;
+    const cost = parseFloat((meterKWh * rate).toFixed(2));
+
+    // 6. Check wallet balance
+    const walletCheck = await db.query(`
+      SELECT balance FROM wallets
+      WHERE user_id = $1 AND is_default = TRUE AND status = 'active'
+    `, [userId]);
+
+    if (walletCheck.rows.length === 0) {
+      return console.warn("Wallet not found or inactive for user", userId);
+    }
+
+    const currentBalance = parseFloat(walletCheck.rows[0].balance);
+
+    if (currentBalance < cost) {
+      console.warn(`User ${userId} has insufficient balance (₹${currentBalance}), required ₹${cost}`);
+
+      // Optionally stop charging
+      publishToConnector(ocppId, {
+        action: "StopTransaction",
+        reason: "InsufficientFunds",
+        message: "Charging stopped due to low wallet balance."
+      });
+
+      return;
+    }
+
+    // 7. Deduct cost from wallet
+    const walletUpdate = await db.query(`
+      UPDATE wallets
+      SET balance = balance - $1
+      WHERE user_id = $2 AND is_default = TRUE AND status = 'active'
+      RETURNING balance
+    `, [cost, userId]);
+
+    // 8. Update charging session
+    await db.query(`
+      UPDATE charging_sessions
+      SET energy_used = $1, cost = cost + $2, updated_at = NOW()
+      WHERE id = $3
+    `, [currentWh, cost, sessionId]);
+
+    // 9. Revenue sharing
+    const partnersRes = await db.query(`
+      SELECT user_id, share_percentage
+      FROM user_station_partners
+      WHERE station_id = $1
+    `, [stationId]);
+
+    for (const partner of partnersRes.rows) {
+      const shareAmount = parseFloat(((cost * partner.share_percentage) / 100).toFixed(2));
+
+      await db.query(`
+        UPDATE wallets
+        SET balance = balance + $1
+        WHERE user_id = $2 AND is_default = TRUE AND status = 'active'
+      `, [shareAmount, partner.user_id]);
+
+      console.log(`Credited ₹${shareAmount} to partner ${partner.user_id}`);
+    }
+
+    console.log(`[${new Date().toISOString()}] Session ${sessionId}: +${deltaWh}Wh | ₹${cost} billed | New balance: ₹${walletUpdate.rows[0].balance}`);
 
   } catch (err) {
     console.error("Error handling metervalue:", err.message);
   }
 });
+
 
 
 function publishToConnector(thingId, messageObj) {
