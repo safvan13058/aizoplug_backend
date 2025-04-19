@@ -153,5 +153,9 @@ const {addstations} = require('../dashboard/stations');
    authorizeRoles('admin','staff','dealer','host', 'customer'),
    addstations
  );
+// ----------------------------------charging sessions------------------
+const {getchargingsession} = require('./chargingsession');
+
+app.get('/api/sessions/recent', validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'), getchargingsession);
 
 module.exports = app
