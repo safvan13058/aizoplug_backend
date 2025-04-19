@@ -65,6 +65,8 @@ app.get('/api/chargers/location', async (req, res) => {
             const distance = parseFloat(
               haversine(parseFloat(lat), parseFloat(long), row.latitude, row.longitude).toFixed(2)
           );
+          const distanceInKm = parseFloat((haversine(parseFloat(lat), parseFloat(long), row.latitude, row.longitude) / 1000).toFixed(2));
+
           
               // Skip if distance exceeds radius
               if (distance > parseFloat(radius) * 1000) continue;
@@ -80,7 +82,7 @@ app.get('/api/chargers/location', async (req, res) => {
                   dynamic_pricing: row.dynamic_pricing,
                   created_at: row.station_created_at,
                   updated_at: row.updated_at,
-                  distance,
+                  distance:distanceInKm,
                   connectors: []
               };
           }
