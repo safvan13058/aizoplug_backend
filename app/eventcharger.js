@@ -303,6 +303,8 @@ client.on("message", async (topic, messageBuffer) => {
       );
       if (energySample) {
         currentWh = parseFloat(energySample.value);
+        console.log("currect wh==", currentWh)
+
         if (isNaN(currentWh)) {
           console.warn("Invalid energy value in message");
           return;
