@@ -22,7 +22,7 @@ function haversine(lat1, lon1, lat2, lon2) {
 
 // ..................................... find chargers .............................................................
 
-app.get('/api/chargers/location', async (req, res) => {
+app.get('/app/api/chargers/location', async (req, res) => {
   try {
       const { lat, long, radius } = req.query;
 

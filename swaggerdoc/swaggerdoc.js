@@ -59,6 +59,119 @@ const Swaggerdoc = {
       }
     }
   },
+  "/app/api/chargers/location": {
+  "get": {
+    "summary": "Get nearby charging stations by location",
+    "tags": ["Charging Stations"],
+    "parameters": [
+      {
+        "name": "lat",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "number",
+          "example": 12.9716
+        },
+        "description": "Latitude of the user's location"
+      },
+      {
+        "name": "long",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "number",
+          "example": 77.5946
+        },
+        "description": "Longitude of the user's location"
+      },
+      {
+        "name": "radius",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "number",
+          "example": 5
+        },
+        "description": "Radius in kilometers to search for charging stations"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "List of charging stations within the specified radius",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "integer", "example": 1 },
+                  "name": { "type": "string", "example": "Green EV Hub" },
+                  "latitude": { "type": "number", "example": 12.9716 },
+                  "longitude": { "type": "number", "example": 77.5946 },
+                  "amenities": { "type": "string", "example": "Restroom, Cafe" },
+                  "contact_info": { "type": "string", "example": "+91-9876543210" },
+                  "dynamic_pricing": { "type": "boolean", "example": true },
+                  "created_at": { "type": "string", "format": "date-time" },
+                  "updated_at": { "type": "string", "format": "date-time" },
+                  "distance": { "type": "string", "example": "1.23 Km" },
+                  "connectors": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer", "example": 101 },
+                        "type": { "type": "string", "example": "Type2" },
+                        "power_output": { "type": "number", "example": 22 },
+                        "state": { "type": "string", "example": "connected" },
+                        "status": { "type": "string", "example": "available" },
+                        "ocpp_id": { "type": "string", "example": "C-1234" },
+                        "last_updated": { "type": "string", "format": "date-time" },
+                        "created_at": { "type": "string", "format": "date-time" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Missing required query parameters",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "lat, long, and radius are required"
+                }
+              }
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "Internal Server Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+},
   "/app/api/add/vehicles/": {
       "post": {
         "summary": "Create a new vehicle",
