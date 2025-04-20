@@ -494,98 +494,6 @@ const Swaggerdoc = {
         }
       }
     },
-    "/dashboard/api/station/{station_id}/partners": {
-      "post": {
-        "summary": "Add a partner to a station",
-        "tags": ["Partners"],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "station_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "example": 1
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "user_id": {
-                    "type": "integer",
-                    "example": 101
-                  },
-                  "share_percentage": {
-                    "type": "number",
-                    "example": 50
-                  },
-                  "role": {
-                    "type": "string",
-                    "example": "partner"
-                  }
-                },
-                "required": ["user_id"]
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Partner added successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Partner added successfully"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "user_id": {
-                          "type": "integer",
-                          "example": 101
-                        },
-                        "station_id": {
-                          "type": "integer",
-                          "example": 1
-                        },
-                        "share_percentage": {
-                          "type": "number",
-                          "example": 50
-                        },
-                        "role": {
-                          "type": "string",
-                          "example": "partner"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Partner already exists"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
     "/dashboard/api/station/{station_id}/partners/{user_id}": {
       "put": {
         "summary": "Update partner details for a station",
@@ -787,6 +695,98 @@ const Swaggerdoc = {
         }
       }
     },
+    "/dashboard/api/station/{station_id}/partners": {
+  "post": {
+    "summary": "Add a partner to a station",
+    "tags": ["Partners"],
+    "security": [
+      {
+        "bearerAuth": []
+      }
+    ],
+    "parameters": [
+      {
+        "name": "station_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "example": 1
+        }
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "integer",
+                "example": 101
+              },
+              "share_percentage": {
+                "type": "number",
+                "example": 50
+              },
+              "role": {
+                "type": "string",
+                "example": "partner"
+              }
+            },
+            "required": ["user_id"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Partner added successfully",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Partner added successfully"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "user_id": {
+                      "type": "integer",
+                      "example": 101
+                    },
+                    "station_id": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "share_percentage": {
+                      "type": "number",
+                      "example": 50
+                    },
+                    "role": {
+                      "type": "string",
+                      "example": "partner"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Partner already exists"
+      },
+      "500": {
+        "description": "Internal Server Error"
+      }
+    }
+  }
+},
     "/app/api/add/wallet/": {
       "post": {
         "summary": "Create a new wallet for the user",
