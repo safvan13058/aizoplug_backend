@@ -1351,6 +1351,182 @@ const Swaggerdoc = {
           }
         }
       },
+     "/charging/start": {
+  "post": {
+    "summary": "Start a charging session",
+    "tags": ["Charging"],
+    "security": [
+      {
+        "bearerAuth": []
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "vehicle_id": {
+                "type": "integer",
+                "example": 12
+              },
+              "connector_id": {
+                "type": "integer",
+                "example": 3
+              },
+              "payment_method": {
+                "type": "string",
+                "example": "wallet"
+              },
+              "estimated_cost": {
+                "type": "number",
+                "example": 150.00
+              },
+              "promotion_id": {
+                "type": "integer",
+                "nullable": true,
+                "example": 5
+              },
+              "sponsored_by": {
+                "type": "string",
+                "nullable": true,
+                "example": "Tesla Inc"
+              },
+              "sponsorship_note": {
+                "type": "string",
+                "nullable": true,
+                "example": "Promotional Free Charging"
+              }
+            },
+            "required": ["vehicle_id", "connector_id", "payment_method", "estimated_cost"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Charging session started successfully",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Charging session started successfully."
+                },
+                "session": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer", "example": 41 },
+                    "user_id": { "type": "integer", "example": 102 },
+                    "vehicle_id": { "type": "integer", "example": 12 },
+                    "connector_id": { "type": "integer", "example": 3 },
+                    "payment_method": { "type": "string", "example": "wallet" },
+                    "status": { "type": "string", "example": "ongoing" },
+                    "promotion_id": { "type": "integer", "nullable": true, "example": 5 },
+                    "sponsored_by": { "type": "string", "nullable": true, "example": "Tesla Inc" },
+                    "sponsorship_note": { "type": "string", "nullable": true, "example": "Promotional Free Charging" },
+                    "created_at": { "type": "string", "format": "date-time", "example": "2025-04-20T14:00:00Z" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Bad request (e.g. insufficient balance, connector not ready)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Insufficient wallet balance to start session."
+                }
+              }
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "Internal Server Error"
+      }
+    }
+  }
+},
+"/dashboard/api/charging/stop": {
+  "post": {
+    "summary": "Stop an ongoing charging session",
+    "tags": ["Charging"],
+    "security": [
+      {
+        "bearerAuth": []
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "connector_id": {
+                "type": "integer",
+                "example": 3
+              }
+            },
+            "required": ["connector_id"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Charging session stop command sent successfully.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Charging session stop command sent successfully."
+                },
+                "transactionId": {
+                  "type": "integer",
+                  "example": 41
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Bad request (e.g. no session or connector found)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "No ongoing session found for this connector."
+                }
+              }
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "Internal Server Error"
+      }
+    }
+  }
+},
     
     
 };
