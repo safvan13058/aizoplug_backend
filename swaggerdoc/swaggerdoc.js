@@ -787,74 +787,7 @@ const Swaggerdoc = {
     }
   }
 },
-"/dashboard/api/display/{station_id}/partners": {
-  "get": {
-    "summary": "List partners of a specific station",
-    "tags": ["Partners"],
-    "security": [
-      {
-        "bearerAuth": []
-      }
-    ],
-    "parameters": [
-      {
-        "name": "station_id",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "integer",
-          "example": 1
-        },
-        "description": "The ID of the charging station"
-      }
-    ],
-    "responses": {
-      "200": {
-        "description": "List of partners for the station",
-        "content": {
-          "application/json": {
-            "schema": {
-              "type": "object",
-              "properties": {
-                "partners": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "integer",
-                        "example": 101
-                      },
-                      "name": {
-                        "type": "string",
-                        "example": "John Doe"
-                      },
-                      "email": {
-                        "type": "string",
-                        "example": "john@example.com"
-                      },
-                      "share_percentage": {
-                        "type": "number",
-                        "example": 40.5
-                      },
-                      "role": {
-                        "type": "string",
-                        "example": "partner"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "500": {
-        "description": "Internal Server Error"
-      }
-    }
-  }
-},
+
     "/app/api/add/wallet/": {
       "post": {
         "summary": "Create a new wallet for the user",
