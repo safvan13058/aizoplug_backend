@@ -1458,7 +1458,7 @@ const Swaggerdoc = {
     }
   }
 },
-"/dashboard/api/charging/stop": {
+"/charging/stop": {
   "post": {
     "summary": "Stop an ongoing charging session",
     "tags": ["Charging"],
