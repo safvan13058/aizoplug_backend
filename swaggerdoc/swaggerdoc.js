@@ -787,7 +787,7 @@ const Swaggerdoc = {
     }
   }
 },
-"/dashboard/api/station/{station_id}/partners": {
+"/dashboard/api/display/{station_id}/partners": {
   "get": {
     "summary": "List partners of a specific station",
     "tags": ["Partners"],

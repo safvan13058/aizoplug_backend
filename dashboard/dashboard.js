@@ -100,7 +100,7 @@ dashboard.delete(
 
 // List all partners
 dashboard.get(
-  '/api/station/:station_id/partners',
+  '/api/display/:station_id/partners',
   validateJwt,
   authorizeRoles('admin', 'staff', 'dealer'),
   listPartners
