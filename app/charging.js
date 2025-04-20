@@ -52,7 +52,7 @@ router.post('/start',
 
      // Ensure the charger is physically connected and logically ready to start
      if (connectorState !== 'connected') {
-       throw new Error('Soryy...,The connector is not functional');
+       throw new Error('Sorry...,The connector is not functional');
      }
      
      if (connectorStatus !== 'preparing') {
