@@ -3,6 +3,10 @@ const app = express();
 const db = require('./middelware/db')
 
 
+const cors = require('cors');
+
+// Allow all origins (or customize for specific origins)
+app.use(cors());
 
 
 
