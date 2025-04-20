@@ -150,6 +150,8 @@ client.on("message", async (topic, message) => {
   }
 });
 
+
+
 async function updateConnectorStatus(ocppId, status) {
   try {
     // First: Check if the connector exists
@@ -172,6 +174,8 @@ async function updateConnectorStatus(ocppId, status) {
     console.error("Error updating connector status:", err);
   }
 }
+
+
 async function updateConnectorstate(ocppId, state) {
   try {
     const checkQuery = `SELECT id FROM connectors WHERE ocpp_id = $1`;
@@ -277,7 +281,6 @@ client.on("message", async (topic, messageBuffer) => {
   }
 });
 
-
 client.on("message", async (topic, messageBuffer) => {
   try {
     const message = JSON.parse(messageBuffer.toString());
@@ -364,7 +367,7 @@ client.on("message", async (topic, messageBuffer) => {
     // 5. Compute cost
     const meterKWh = deltaWh / 1000;
     const cost = parseFloat((meterKWh * rate).toFixed(2));
-
+   
     // 6. Check wallet balance
     const walletCheck = await db.query(`
       SELECT balance FROM wallets
@@ -398,6 +401,21 @@ client.on("message", async (topic, messageBuffer) => {
       RETURNING balance
     `, [cost, userId]);
 
+    await db.query(`
+      INSERT INTO transactions (
+        user_id,
+        session_id,
+        type,
+        amount,
+        transaction_type,
+        status,
+        notes
+      ) VALUES (
+        $1, $2, 'debit', $3, 'charge', 'completed', $4
+      )
+    `, [userId, sessionId, cost, 'Charging fee deduction']);
+    
+
     // 8. Update charging session
     await db.query(`
       UPDATE charging_sessions
@@ -420,6 +438,21 @@ client.on("message", async (topic, messageBuffer) => {
         SET balance = balance + $1
         WHERE user_id = $2 AND is_default = TRUE AND status = 'active'
       `, [shareAmount, partner.user_id]);
+
+      await db.query(`
+        INSERT INTO transactions (
+          user_id,
+          session_id,
+          type,
+          amount,
+          transaction_type,
+          status,
+          notes
+        ) VALUES (
+          $1, $2, 'credit', $3, 'host_earning', 'completed', $4
+        )
+      `, [partner.user_id, sessionId, shareAmount, `Earning from station ${stationId}`]);
+      
 
       console.log(`Credited ₹${shareAmount} to partner ${partner.user_id}`);
     }
