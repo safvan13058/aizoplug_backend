@@ -61,6 +61,29 @@ CREATE TABLE wallet_transactions_log (
 );
 
 
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    session_id INT REFERENCES charging_sessions(id) ON DELETE SET NULL,
+    type VARCHAR (225) ,--credit/debit
+    amount DECIMAL(10,2) NOT NULL,
+    transaction_type VARCHAR(50) CHECK (
+        transaction_type IN (
+            'top-up',           -- Add money
+            'charge',           -- Pay for chrg
+            'refund',           -- Money back
+            'host_earning',     -- Host gets paid
+            'host_payout',      -- Host takes money out
+            'sponsored_charge',  -- Host payin for friend / themself /such cases
+            'amenity_usage' -- For amenity use
+        )
+    ),
+    payment_gateway_id VARCHAR(255),
+    bank_details JSONB,      -- For host payouts
+    status VARCHAR(20) CHECK (status IN ('pending', 'completed', 'failed')),
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE vehicles (
     id SERIAL PRIMARY KEY,  -- uniq vechicle id
@@ -76,14 +99,25 @@ CREATE TABLE vehicles (
 
 CREATE TABLE charging_stations (
     id SERIAL PRIMARY KEY,  -- station id
+    -- user_id iNT REFERENCES user(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,  -- statn name
     latitude DECIMAL(10,7) NOT NULL,  -- lat
     longitude DECIMAL(10,7) NOT NULL,  -- long
     amenities TEXT,  -- ammeneties in JSON/CSV
-    contact_info TEXT,  -- contct details
-    dynamic_pricing JSONB,  -- dynmic price model
+    contact_info TEXT,  -- contct details          
+    dynamic_pricing JSONB,  -- dynmic price model  
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE user_station_partners (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    station_id INT REFERENCES charging_stations(id) ON DELETE CASCADE,
+    share_percentage DECIMAL(5,2) DEFAULT 0.0, -- optional: share %
+    role VARCHAR(50), -- optional: like 'owner', 'partner'
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, station_id) -- prevent duplicate pairings
 );
 
 -- Connectors Table
@@ -99,7 +133,29 @@ CREATE TABLE connectors (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
+CREATE TABLE promotional_rates (
+    id SERIAL PRIMARY KEY,
+    station_id INT REFERENCES charging_stations(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    promo_type VARCHAR(20) CHECK (promo_type IN ('percentage', 'fixed_amount')),
+    discount_value DECIMAL(10,2) NOT NULL,  -- % or fixed amnt
+    start_date TIMESTAMP NOT NULL,
+    end_date TIMESTAMP NOT NULL,
+    start_time TIME,                        -- daily time limit (optionl)
+    end_time TIME,                          -- daily time limit (optionl)
+    min_session_amount DECIMAL(10,2),       -- min amt to apply
+    max_discount DECIMAL(10,2),             -- max discnt cap
+    usage_limit INT,                        -- how many times can be used
+    used_count INT DEFAULT 0,               -- times used so far
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'expired')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT valid_promotion CHECK (
+        discount_value > 0 AND 
+        start_date < end_date AND
+        (start_time IS NULL OR end_time IS NULL OR start_time < end_time)
+    )
+);
 
 -- Chargng Sessions Table
 CREATE TABLE charging_sessions (
@@ -109,6 +165,7 @@ CREATE TABLE charging_sessions (
     connector_id INT REFERENCES connectors(id) ON DELETE CASCADE,  -- which conector
     start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- when startd
     end_time TIMESTAMP,  -- when finishd
+    updated_at TIMESTAMP,
     energy_used DECIMAL(6,2),  -- kWhs used
     cost DECIMAL(10,2),  -- cost based on dynmic price
     payment_method VARCHAR(50) CHECK (payment_method IN ('wallet', 'RFID', 'QR')),  -- how paid

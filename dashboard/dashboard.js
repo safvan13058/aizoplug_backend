@@ -4,7 +4,9 @@ const db = require('../middelware/db')
 dashboard.use(express.json()); 
 const { validateJwt, authorizeRoles } = require('../middelware/auth');
 
-
+dashboard.get('/working', (req, res) => {
+  res.send('app Server is working!');
+});
 // ............................................................................. insert ...........................................................................
 
 dashboard.post('/insert/charger', async (req, res) => {
@@ -30,17 +32,39 @@ dashboard.post('/insert/charger', async (req, res) => {
     }
 });
 // --------------------------------station users----------------------------
-const {addstations} = require('./stations');
-dashboard.get('/working', (req, res) => {
-  res.send('app Server is working!');
-});
+const {addstations,editStation,listStations,deleteStation,listuserstation} = require('./stations');
+
 dashboard.post(
    '/api/add/station',
    validateJwt,
    authorizeRoles('admin','staff','dealer','host', 'customer'),
    addstations
  );
-
+ dashboard.put(
+  '/api/update/station',
+  validateJwt,
+  authorizeRoles('admin','staff','dealer','host', 'customer'),
+  editStation
+);
+dashboard.get(
+  '/api/list/station',
+  validateJwt,
+  authorizeRoles('admin','staff','dealer','host', 'customer'),
+  listStations
+);
+dashboard.delete(
+  '/api/delete/station',
+  validateJwt,
+  authorizeRoles('admin','staff','dealer','host', 'customer'),
+  deleteStation
+);
+dashboard.get(
+  '/api/list/user/station',
+  validateJwt,
+  authorizeRoles('admin','staff','dealer','host', 'customer'),
+  listuserstation
+);
+// -----------------------------------------
 const {
     addPartner,
     updatePartner,

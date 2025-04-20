@@ -932,52 +932,94 @@ const Swaggerdoc = {
         }
       }
     },
-    "/app/api/display/wallet/history": {
+    "/app/api/display/wallet/history":{
       "get": {
-        "summary": "Get transaction history for the authenticated user",
+        "summary": "Get user's wallet transaction history",
+        "description": "Returns a paginated list of transactions for the authenticated user, with optional date filtering.",
         "tags": ["Wallet"],
         "security": [
           {
             "bearerAuth": []
           }
         ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Page number for pagination"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Number of transactions per page"
+          },
+          {
+            "in": "query",
+            "name": "start_date",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Filter transactions from this date (YYYY-MM-DD)"
+          },
+          {
+            "in": "query",
+            "name": "end_date",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Filter transactions up to this date (YYYY-MM-DD)"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Transaction history for the user",
+            "description": "Successful response with transaction data",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "user_id": {
-                      "type": "integer",
-                      "example": 101
+                      "type": "string"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "limit": {
+                      "type": "integer"
                     },
                     "transactions": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "transaction_id": {
-                            "type": "integer",
-                            "example": 1001
+                          "id": {
+                            "type": "integer"
+                          },
+                          "user_id": {
+                            "type": "integer"
                           },
                           "amount": {
                             "type": "number",
-                            "example": 500
+                            "format": "float"
                           },
-                          "transaction_type": {
-                            "type": "string",
-                            "example": "top-up"
-                          },
-                          "status": {
-                            "type": "string",
-                            "example": "completed"
+                          "type": {
+                            "type": "string"
                           },
                           "created_at": {
                             "type": "string",
-                            "example": "2025-04-19T14:30:00Z"
+                            "format": "date-time"
                           }
+                          // Add additional fields here based on your `transactions` table
                         }
                       }
                     }
@@ -987,7 +1029,19 @@ const Swaggerdoc = {
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1076,6 +1130,161 @@ const Swaggerdoc = {
         }
       }
     },
+      "/dashboard/api/add/station": {
+        "post": {
+          "tags": ["Charging Stations"],
+          "summary": "Add a new charging station with partners",
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "latitude": { "type": "number", "format": "float" },
+                    "longitude": { "type": "number", "format": "float" },
+                    "amenities": { "type": "string" },
+                    "contact_info": { "type": "string" },
+                    "dynamic_pricing": { "type": "object" },
+                    "partners": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "user_id": { "type": "integer" },
+                          "role": { "type": "string" },
+                          "share_percentage": { "type": "number", "format": "float" }
+                        },
+                        "required": ["user_id"]
+                      }
+                    }
+                  },
+                  "required": ["name", "latitude", "longitude", "partners"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Station and partners added successfully"
+            },
+            "400": {
+              "description": "Invalid input"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/dashboard/api/update/station": {
+        "put": {
+          "tags": ["Charging Stations"],
+          "summary": "Update a charging station",
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "query",
+              "required": true,
+              "schema": { "type": "integer" }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Fields to update"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": { "description": "Station updated successfully" },
+            "400": { "description": "No fields provided" },
+            "404": { "description": "Station not found" },
+            "500": { "description": "Internal server error" }
+          }
+        }
+      },
+      "/dashboard/api/list/station": {
+        "get": {
+          "tags": ["Charging Stations"],
+          "summary": "List all charging stations",
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": {
+              "description": "List of stations",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "stations": {
+                        "type": "array",
+                        "items": { "type": "object" }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": { "description": "Internal server error" }
+          }
+        }
+      },
+      "/dashboard/api/delete/station": {
+        "delete": {
+          "tags": ["Charging Stations"],
+          "summary": "Delete a charging station",
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "query",
+              "required": true,
+              "schema": { "type": "integer" }
+            }
+          ],
+          "responses": {
+            "200": { "description": "Station deleted successfully" },
+            "404": { "description": "Station not found" },
+            "500": { "description": "Internal server error" }
+          }
+        }
+      },
+      "/dashboard/api/list/user/station": {
+        "get": {
+          "tags": ["Charging Stations"],
+          "summary": "List charging stations for the logged-in user",
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": {
+              "description": "List of user stations",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "stations": {
+                        "type": "array",
+                        "items": { "type": "object" }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": { "description": "Internal server error" }
+          }
+        }
+      },
+    
+    
 };
 
 module.exports = Swaggerdoc;

@@ -135,18 +135,43 @@ const spent= async (req, res) => {
   };
   
 
-  const userwallethistory= async (req, res) => {
+  const userwallethistory = async (req, res) => {
     const userId = req.user.id;
+    const { page = 1, limit = 10, start_date, end_date } = req.query;
+  
+    // Convert to integers
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const offset = (pageNum - 1) * limitNum;
   
     try {
-      const result = await pool.query(
-        `SELECT * FROM transactions
-         WHERE user_id = $1
-         ORDER BY created_at DESC`,
-        [userId]
-      );
+      // Base query
+      let query = `SELECT * FROM transactions WHERE user_id = $1`;
+      const params = [userId];
   
-      res.json({ user_id: userId, transactions: result.rows });
+      // Date filtering
+      if (start_date) {
+        params.push(start_date);
+        query += ` AND created_at >= $${params.length}`;
+      }
+  
+      if (end_date) {
+        params.push(end_date);
+        query += ` AND created_at <= $${params.length}`;
+      }
+  
+      // Sorting and pagination
+      query += ` ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+      params.push(limitNum, offset);
+  
+      const result = await pool.query(query, params);
+  
+      res.json({
+        user_id: userId,
+        page: pageNum,
+        limit: limitNum,
+        transactions: result.rows,
+      });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

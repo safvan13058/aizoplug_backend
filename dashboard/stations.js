@@ -5,44 +5,194 @@ app.use(express.json()); // for parsing application/json
 
 
 
-const addstations= async (req, res) => {
+const addstations = async (req, res) => {
+    const client = await pool.connect();
     const {
-        name,
-        latitude,
-        longitude,
-        amenities,
-        contact_info,
-        dynamic_pricing
+      name,
+      latitude,
+      longitude,
+      amenities,
+      contact_info,
+      dynamic_pricing,
+      partners
     } = req.body;
-
+  
     try {
-        const result = await pool.query(
-            `INSERT INTO charging_stations 
-            (name, latitude, longitude, amenities, contact_info, dynamic_pricing) 
-            VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-            [name, latitude, longitude, amenities, contact_info, dynamic_pricing]
+      // Validate partner array
+      if (!Array.isArray(partners) || partners.length === 0) {
+        return res.status(400).json({ error: 'At least one partner is required' });
+      }
+  
+      await client.query('BEGIN');
+  
+      // Insert station
+      const stationResult = await client.query(
+        `INSERT INTO charging_stations 
+         (name, latitude, longitude, amenities, contact_info, dynamic_pricing)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+        [name, latitude, longitude, amenities, contact_info, dynamic_pricing]
+      );
+      const station = stationResult.rows[0];
+  
+      // Insert partners
+      for (const partner of partners) {
+        const { user_id, role = 'partner', share_percentage = 0.0 } = partner;
+  
+        if (!user_id) {
+          throw new Error('Each partner must have a user_id');
+        }
+  
+        await client.query(
+          `INSERT INTO user_station_partners 
+           (user_id, station_id, share_percentage, role)
+           VALUES ($1, $2, $3, $4)`,
+          [user_id, station.id, share_percentage, role]
         );
-
-        res.status(201).json({
-            message: 'Charging station created successfully',
-            station: result.rows[0]
-        });
+      }
+  
+      await client.query('COMMIT');
+  
+      res.status(201).json({
+        message: 'Charging station and partners added successfully',
+        station
+      });
     } catch (error) {
-        console.error('Error creating station:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+      await client.query('ROLLBACK');
+      console.error('Error creating station and partners:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+      client.release();
     }
-}
+  };
+  
+
+
+const editStation = async (req, res) => {
+    const { id } = req.params;
+    const fields = req.body;
+  
+    // If no fields provided, return 400
+    if (Object.keys(fields).length === 0) {
+      return res.status(400).json({ error: 'No fields provided to update' });
+    }
+  
+    // Build dynamic SET clause
+    const setClauses = [];
+    const values = [];
+    let index = 1;
+  
+    for (const [key, value] of Object.entries(fields)) {
+      setClauses.push(`${key} = $${index}`);
+      values.push(value);
+      index++;
+    }
+  
+    // Add updated_at
+    setClauses.push(`updated_at = CURRENT_TIMESTAMP`);
+  
+    // Add station ID for WHERE clause
+    values.push(id);
+  
+    const query = `
+      UPDATE charging_stations
+      SET ${setClauses.join(', ')}
+      WHERE id = $${index}
+      RETURNING *;
+    `;
+  
+    try {
+      const result = await pool.query(query, values);
+  
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Station not found' });
+      }
+  
+      res.json({
+        message: 'Charging station updated successfully',
+        station: result.rows[0]
+      });
+    } catch (error) {
+      console.error('Error updating station:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
+  
+  
+
+const listStations = async (req, res) => {
+    try {
+      const result = await pool.query(
+        `SELECT * FROM charging_stations ORDER BY created_at DESC`
+      );
+  
+      res.json({ stations: result.rows });
+    } catch (error) {
+      console.error('Error fetching stations:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
+  
+
+const deleteStation = async (req, res) => {
+    const { id } = req.params;
+  
+    try {
+      const result = await pool.query(
+        `DELETE FROM charging_stations WHERE id = $1 RETURNING *`,
+        [id]
+      );
+  
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Station not found' });
+      }
+  
+      res.json({
+        message: 'Charging station deleted successfully',
+        station: result.rows[0]
+      });
+    } catch (error) {
+      console.error('Error deleting station:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
+  
+
+const listuserstation=async (req, res) => {
+    const userId = parseInt(req.user.id);
+  
+    try {
+      const query = `
+        SELECT 
+          cs.id AS station_id,
+          cs.name,
+          cs.latitude,
+          cs.longitude,
+          cs.amenities,
+          cs.contact_info,
+          cs.dynamic_pricing,
+          cs.created_at,
+          cs.updated_at,
+          usp.share_percentage,
+          usp.role,
+          usp.joined_at
+        FROM 
+          charging_stations cs
+        JOIN 
+          user_station_partners usp ON cs.id = usp.station_id
+        WHERE 
+          usp.user_id = $1
+      `;
+  
+      const result = await pool.query(query, [userId]);
+  
+      res.json({ stations: result.rows });
+    } catch (error) {
+      console.error('Error fetching user stations:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
 
 
 
 
-
-
-
-
-
-
-
-
-
-module.exports = {addstations};
+module.exports = {addstations,editStation,listStations,deleteStation,listuserstation};
