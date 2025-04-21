@@ -56,7 +56,7 @@ router.post('/start',
        throw new Error('Sorry...,The connector is not functional');
      }
      
-     if (connectorStatus !== 'preparing') {
+     if (connectorStatus !== 'Preparing') {
        throw new Error('Connector is not ready ,Please connect the connector to the vehicle before starting the session.');
      }
 
