@@ -216,7 +216,7 @@ async function updateConnectorstate(ocppId, state) {
       // Step 4: Mark session as completed
       await db.query(
         `UPDATE charging_sessions 
-         SET status = 'completed', end_time = NOW(), updated_at = NOW()
+         SET status = 'failed', end_time = NOW(), updated_at = NOW()
          WHERE id = $1`,
         [sessionId]
       );
