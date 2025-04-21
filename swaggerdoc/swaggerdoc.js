@@ -1669,7 +1669,7 @@ const Swaggerdoc = {
     }
   },
   
-    "/api/api/sessions/recent": {
+    "/app/api/sessions/recent": {
       "get": {
         "tags": ["Charging Sessions"],
         "summary": "Get recent charging sessions for a user",

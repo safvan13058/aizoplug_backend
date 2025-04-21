@@ -64,8 +64,6 @@ const addstations = async (req, res) => {
       client.release();
     }
   };
-  
-
 
 const editStation = async (req, res) => {
     const { id } = req.params;
