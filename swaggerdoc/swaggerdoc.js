@@ -1668,6 +1668,129 @@ const Swaggerdoc = {
       }
     }
   },
+  
+    "/api/api/sessions/recent": {
+      "get": {
+        "tags": ["Charging Sessions"],
+        "summary": "Get recent charging sessions for a user",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by session status (ongoing, completed, failed)",
+            "schema": {
+              "type": "string",
+              "enum": ["ongoing", "completed", "failed"]
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Start date filter (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-04-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "End date filter (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-04-30T23:59:59Z"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of sessions per page",
+            "schema": {
+              "type": "integer",
+              "default": 30
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of recent charging sessions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "page": {
+                      "type": "integer"
+                    },
+                    "limit": {
+                      "type": "integer"
+                    },
+                    "total_count": {
+                      "type": "integer"
+                    },
+                    "sessions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "user_id": { "type": "integer" },
+                          "vehicle_id": { "type": "integer" },
+                          "connector_id": { "type": "integer" },
+                          "start_time": { "type": "string", "format": "date-time" },
+                          "end_time": { "type": "string", "format": "date-time", "nullable": true },
+                          "updated_at": { "type": "string", "format": "date-time", "nullable": true },
+                          "energy_used": { "type": "number", "format": "float" },
+                          "cost": { "type": "number", "format": "float" },
+                          "payment_method": {
+                            "type": "string",
+                            "enum": ["wallet", "RFID", "QR"]
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": ["ongoing", "completed", "failed"]
+                          },
+                          "created_at": { "type": "string", "format": "date-time" },
+                          "promotion_id": { "type": "integer", "nullable": true },
+                          "discount_amount": { "type": "number", "format": "float" },
+                          "sponsored_by": { "type": "integer", "nullable": true },
+                          "sponsorship_note": { "type": "string", "nullable": true }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },  
 
 
 };
