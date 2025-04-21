@@ -40,7 +40,7 @@ router.post('/start',
       }
 
       const connectorRes = await db.query(`
-        SELECT ocpp_id FROM connectors
+        SELECT ocpp_id,status,state FROM connectors
         WHERE id = $1
        `, [connector_id]);
 
