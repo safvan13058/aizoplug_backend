@@ -175,17 +175,20 @@ async function updateConnectorStatus(ocppId, status) {
   }
 }
 
-
 async function updateConnectorstate(ocppId, state) {
   try {
+    // Step 1: Find connector by ocpp_id
     const checkQuery = `SELECT id FROM connectors WHERE ocpp_id = $1`;
     const checkResult = await db.query(checkQuery, [ocppId]);
 
     if (checkResult.rowCount === 0) {
-      // console.warn(`⚠️ Connector with ocpp_id "${ocppId}" not found. Skipping update.`);
+      console.warn(`⚠️ Connector with ocpp_id "${ocppId}" not found. Skipping update.`);
       return;
     }
 
+    const connectorId = checkResult.rows[0].id;
+
+    // Step 2: Update connector state
     const updateQuery = `
       UPDATE connectors
       SET state = $1, last_updated = NOW()
@@ -193,8 +196,35 @@ async function updateConnectorstate(ocppId, state) {
     `;
     await db.query(updateQuery, [state, ocppId]);
     console.log(`🔄 Updated connector ${ocppId} to state "${state}".`);
+
+    // Step 3: If disconnected, check for ongoing session
+    if (state.toLowerCase() === 'disconnected') {
+      const sessionRes = await db.query(
+        `SELECT id FROM charging_sessions 
+         WHERE connector_id = $1 AND status = 'ongoing' 
+         ORDER BY created_at DESC LIMIT 1`,
+        [connectorId]
+      );
+
+      if (sessionRes.rows.length === 0) {
+        console.warn(`⚠️ No active session found for connector ${connectorId}.`);
+        return;
+      }
+
+      const sessionId = sessionRes.rows[0].id;
+
+      // Step 4: Mark session as completed
+      await db.query(
+        `UPDATE charging_sessions 
+         SET status = 'completed', end_time = NOW(), updated_at = NOW()
+         WHERE id = $1`,
+        [sessionId]
+      );
+
+      console.log(`✅ Charging session ${sessionId} marked as completed.`);
+    }
   } catch (err) {
-    console.error("❌ Error updating connector state:", err);
+    console.error("❌ Error updating connector state or session:", err);
   }
 }
 

@@ -2,6 +2,7 @@ const express = require('express');
 const pool = require('../middelware/db');
 const {validateJwt,authorizeRoles} = require('../middelware/auth')
 
+
 const create_vehi = async (req, res) => {
     const {
         vehicle_number,
