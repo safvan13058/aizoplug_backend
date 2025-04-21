@@ -51,6 +51,7 @@ router.post('/start',
      const { ocpp_id, status: connectorStatus, state: connectorState } = connectorRes.rows[0];
 
      // Ensure the charger is physically connected and logically ready to start
+     console.log("charging",ocpp_id,connectorStatus,connectorState)
      if (connectorState !== 'connected') {
        throw new Error('Sorry...,The connector is not functional');
      }
