@@ -177,7 +177,7 @@ app.get('/api/display/user/vehicles',
     validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
     , getvehiclebyuser);
 
-app.delete('/api/delete/vehicles',
+app.delete('/api/delete/vehicles/:id',
     validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
     , delete_vehi);
 
