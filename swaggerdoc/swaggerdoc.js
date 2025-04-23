@@ -2067,6 +2067,71 @@ const Swaggerdoc = {
         }
       }
     },
+    "/api/station/devices/{station_id}": {
+      "get": {
+        "tags": ["Station Devices"],
+        "summary": "Get connectors and/or plug switches for a station",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "station_id",
+            "in": "path",
+            "required": true,
+            "description": "ID of the station",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Device type: 'charger' for connectors, 'switch' for plug switches. Leave empty to fetch both.",
+            "schema": {
+              "type": "string",
+              "enum": ["charger", "switch"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "chargers": {
+                      "type": "array",
+                      "items": {
+                        // "$ref": "#/components/schemas/Connector"
+                      }
+                    },
+                    "switches": {
+                      "type": "array",
+                      "items": {
+                        // "$ref": "#/components/schemas/PlugSwitch"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    
 };
 
 module.exports = Swaggerdoc;
