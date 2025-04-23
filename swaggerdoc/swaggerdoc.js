@@ -1512,9 +1512,9 @@ const Swaggerdoc = {
                   "type": "integer",
                   "example": 12
                 },
-                "connector_id": {
-                  "type": "integer",
-                  "example": 3
+                "ocppid": {
+                  "type": "string",
+                  "example": "aizochargertest"
                 },
                 "payment_method": {
                   "type": "string",
