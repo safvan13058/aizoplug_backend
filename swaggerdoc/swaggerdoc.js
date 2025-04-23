@@ -1841,7 +1841,7 @@ const Swaggerdoc = {
                     "example": "2025-04-23T10:00:00Z"
                   }
                 },
-                "required": ["type", "power_output", "state", "status", "ocpp_id"]
+                "required": ["ocpp_id"]
               }
             }
           }
