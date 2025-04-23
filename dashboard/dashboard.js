@@ -107,10 +107,14 @@ dashboard.get(
 );
 // ---------------------------------------------------------------------------
 // ----------------------connectors-------------------------------------
-const {addConnector} = require('./connectors');
+const {addConnector, deleteConnector} = require('./connectors');
 dashboard.post('/api/stations/:station_id/connectors', 
   validateJwt,
   authorizeRoles('admin', 'staff', 'dealer'),
   addConnector);
-
+  dashboard.delete('/api/connectors/:id',
+    validateJwt,
+    authorizeRoles('admin', 'staff', 'dealer'),
+    deleteConnector
+  );
 module.exports = dashboard

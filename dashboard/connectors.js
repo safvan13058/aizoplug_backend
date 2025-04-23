@@ -34,6 +34,21 @@ const addConnector = async (req, res) => {
     }
   };
 
+  const deleteConnector = async (req, res) => {
+    const { id } = req.params;
+  
+    try {
+      const result = await pool.query('DELETE FROM connectors WHERE id = $1 RETURNING *', [id]);
+  
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Connector not found' });
+      }
+  
+      res.json({ message: 'Connector deleted successfully', connector: result.rows[0] });
+    } catch (err) {
+      console.error('Error deleting connector:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
 
-
-module.exports = { addConnector};
+module.exports = { addConnector, deleteConnector};
