@@ -1975,6 +1975,117 @@ const Swaggerdoc = {
       ]
     }
   },
+  "/app/api/device/accessshare/{station_id}": {
+      "post": {
+        "tags": ["Access Share"],
+        "summary": "Share device access by linking to a station",
+        "description": "Links devices associated with a 'thing' to a charging station as either connectors or plug switches. Fails if any device is already linked.",
+        "operationId": "shareDeviceAccess",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "station_id",
+            "in": "path",
+            "description": "ID of the charging station to link devices to",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "serial": {
+                    "type": "string",
+                    "example": "ABC123XYZ"
+                  },
+                  "securitykey": {
+                    "type": "string",
+                    "example": "secureKey987"
+                  }
+                },
+                "required": ["serial", "securitykey"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Devices successfully linked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Devices successfully linked"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Device already connected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Device already connected"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Thing not found or no devices found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Thing not found or invalid credentials"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
 };
 
 module.exports = Swaggerdoc;
