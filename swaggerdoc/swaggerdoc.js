@@ -1900,8 +1900,81 @@ const Swaggerdoc = {
         ]
       }
     },
-
-
+    "/api/connectors/{id}": {
+    "delete": {
+      "tags": ["Connectors"],
+      "summary": "Delete a connector",
+      "description": "Deletes a connector by ID. Requires admin, staff, or dealer roles.",
+      "operationId": "deleteConnector",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID of the connector to delete",
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Connector deleted successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Connector deleted successfully"
+                  },
+                  "connector": {
+                    "type": "object",
+                    "example": {
+                      "id": 1,
+                      "station_id": 10,
+                      "type": "CCS",
+                      "power_output": 50.0,
+                      "state": "connected",
+                      "status": "Available",
+                      "ocpp_id": "aizochargertest",
+                      "last_updated": "2025-04-23T10:00:00Z",
+                      "created_at": "2025-04-22T08:30:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Connector not found",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string",
+                    "example": "Connector not found"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal Server Error"
+        }
+      },
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ]
+    }
+  },
 };
 
 module.exports = Swaggerdoc;
