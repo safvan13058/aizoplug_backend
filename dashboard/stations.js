@@ -207,14 +207,14 @@ const stationconnectors=async (req, res) => {
         'SELECT * FROM connectors WHERE station_id = $1',
         [station_id]
       );
-      result.connectors = rows;
+      result.chargers = rows;
 
     } else if (type === 'switch') {
       const { rows } = await pool.query(
         'SELECT * FROM plug_switches WHERE station_id = $1',
         [station_id]
       );
-      result.plug_switches = rows;
+      result.switches = rows;
 
     } else {
       const [connectors, plugSwitches] = await Promise.all([
