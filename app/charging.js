@@ -10,15 +10,16 @@ router.post('/start',
   authorizeRoles('admin', 'customer', 'staff', 'dealer'),
   async (req, res) => {
     const {
-      vehicle_id,
-      connector_id,
+      vehicle_id,  
+      ocppid,
       payment_method,
-      estimated_cost, // estimated cost for the session
-      promotion_id,
-      sponsored_by,
+      estimated_cost,  // estimated cost for the session
+      promotion_id,   
+      sponsored_by,   
       sponsorship_note
     } = req.body;
     const user_id = req.user.id;
+
     try {
       await db.query('BEGIN');
 
@@ -38,6 +39,18 @@ router.post('/start',
       if (parseFloat(wallet.balance) < parseFloat(estimated_cost)) {
         throw new Error('Insufficient wallet balance to start session.');
       }
+       // Find the connector_id using ocpp_id
+  const connectorResult = await client.query(
+    'SELECT id FROM connectors WHERE ocpp_id = $1',
+    [ocppid]
+  );
+
+  if (connectorResult.rows.length === 0) {
+    return res.status(404).json({ message: "Connector not found" });
+  }
+
+  const connector_id = connectorResult.rows[0].id;
+
 
       const connectorRes = await db.query(`
         SELECT ocpp_id,status,state FROM connectors
