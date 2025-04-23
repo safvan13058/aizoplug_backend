@@ -1596,12 +1596,12 @@ const Swaggerdoc = {
             "schema": {
               "type": "object",
               "properties": {
-                "connector_id": {
-                  "type": "integer",
-                  "example": 3
+                "ocppid": {
+                  "type": "string",
+                  "example": ""
                 }
               },
-              "required": ["connector_id"]
+              "required": ["ocppid"]
             }
           }
         }
