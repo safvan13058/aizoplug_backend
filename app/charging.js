@@ -41,7 +41,7 @@ router.post('/start',
         throw new Error('Insufficient wallet balance to start session.');
       }
        // Find the connector_id using ocpp_id
-  const connectorResult = await client.query(
+  const connectorResult = await db.query(
     'SELECT id FROM connectors WHERE ocpp_id = $1',
     [ocppid]
   );
