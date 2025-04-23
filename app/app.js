@@ -230,4 +230,9 @@ app.post('/api/device/accessshare/:station_id',
    validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
    shareaccess);
 
+
+const {stationconnectors}=require('../dashboard/stations')
+app.get('/api/station/devices/:station_id',
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
+  stationconnectors);
 module.exports = app

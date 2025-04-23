@@ -190,7 +190,51 @@ const listuserstation=async (req, res) => {
     }
   };
 
+// GET /station/devices?type=charger|switch
+const stationconnectors=async (req, res) => {
+  const { type} = req.query;
+  const {station_id }=req.params;
+
+  try {
+    if (!station_id) {
+      return res.status(400).json({ error: 'station_id is required' });
+    }
+
+    let result = {};
+
+    if (type === 'charger') {
+      const { rows } = await pool.query(
+        'SELECT * FROM connectors WHERE station_id = $1',
+        [station_id]
+      );
+      result.connectors = rows;
+
+    } else if (type === 'switch') {
+      const { rows } = await pool.query(
+        'SELECT * FROM plug_switches WHERE station_id = $1',
+        [station_id]
+      );
+      result.plug_switches = rows;
+
+    } else {
+      const [connectors, plugSwitches] = await Promise.all([
+        pool.query('SELECT * FROM connectors WHERE station_id = $1', [station_id]),
+        pool.query('SELECT * FROM plug_switches WHERE station_id = $1', [station_id]),
+      ]);
+      result = {
+        chargers: connectors.rows,
+        switches: plugSwitches.rows,
+      };
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error('Error fetching devices:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 
 
-module.exports = {addstations,editStation,listStations,deleteStation,listuserstation};
+
+module.exports = {addstations,editStation,listStations,deleteStation,listuserstation,stationconnectors};
