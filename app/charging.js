@@ -128,7 +128,7 @@ router.post('/stop', async (req, res) => {
   try {
     // 1. Fetch ocpp_id from connector_id
     const connectorRes = await db.query(`
-      SELECT ocpp_id FROM connectors
+      SELECT id, ocpp_id FROM connectors
       WHERE ocpp_id = $1
     `, [ocppid]);
 
@@ -137,6 +137,7 @@ router.post('/stop', async (req, res) => {
     }
 
     const ocppId = connectorRes.rows[0].ocpp_id;
+    const connector_id= connectorRes.rows[0].id
 
     // 2. Get the latest transaction/session ID if needed
     // Replace this logic with actual active session query if required
