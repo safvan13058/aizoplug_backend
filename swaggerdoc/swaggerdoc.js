@@ -1900,7 +1900,7 @@ const Swaggerdoc = {
         ]
       }
     },
-    "/api/connectors/{id}": {
+    "/dashboard/api/connectors/{id}": {
     "delete": {
       "tags": ["Connectors"],
       "summary": "Delete a connector",
