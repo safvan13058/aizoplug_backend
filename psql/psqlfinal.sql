@@ -133,6 +133,17 @@ CREATE TABLE connectors (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE plug_switches (
+    id SERIAL PRIMARY KEY,  -- unique switch id
+    station_id INT REFERENCES charging_stations(id) ON DELETE CASCADE,
+    device_id  VARCHAR(225) REFERENCES devices(deviceId) ON DELETE CASCADE,  -- which connector this switch controls 
+    hub_index VARCHAR(100) NOT NULL,  -- unique identifier for the switch within a station/hub
+    type VARCHAR(50),    -- e.g. relay, smart_switch 
+    status VARCHAR(50),  -- e.g. on, off, fault 
+    last_heartbeat TIMESTAMP,  -- last time the switch pinged
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE promotional_rates (
     id SERIAL PRIMARY KEY,
     station_id INT REFERENCES charging_stations(id) ON DELETE CASCADE,
@@ -163,6 +174,7 @@ CREATE TABLE charging_sessions (
     user_id INT REFERENCES users(id) ON DELETE CASCADE,  -- who chrgd
     vehicle_id INT REFERENCES vehicles(id) ON DELETE CASCADE,  -- which car
     connector_id INT REFERENCES connectors(id) ON DELETE CASCADE,  -- which conector
+    plug_switches_id INT REFERENCES  plug_switches(id) ON DELETE CASCADE,  -- which conector
     start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- when startd
     end_time TIMESTAMP,  -- when finishd
     updated_at TIMESTAMP,

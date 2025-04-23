@@ -1540,7 +1540,7 @@ const Swaggerdoc = {
                 //   "example": "Promotional Free Charging"
                 // }
               },
-              "required": ["vehicle_id", "connector_id", "payment_method", "estimated_cost"]
+              "required": ["vehicle_id", "connector_id", "payment_method"]
             }
           }
         }

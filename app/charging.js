@@ -5,6 +5,7 @@ router.use(express.json());
 const db = require('../middelware/db'); // your PostgreSQL connection instance
 const { publishToConnector } = require('./eventcharger')
 const { validateJwt, authorizeRoles } = require('../middelware/auth')
+
 router.post('/start',
   validateJwt,
   authorizeRoles('admin', 'customer', 'staff', 'dealer'),
@@ -120,7 +121,6 @@ router.post('/start',
       res.status(400).json({ error: err.message });
     }
   });
-
 // POST /api/charging-sessions/stop
 router.post('/stop', async (req, res) => {
   const { connector_id } = req.body;
