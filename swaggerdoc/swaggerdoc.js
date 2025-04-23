@@ -1791,6 +1791,115 @@ const Swaggerdoc = {
         }
       }
     },  
+    "/dashboard/api/stations/{station_id}/connectors": {
+      "post": {
+        "tags": ["Connectors"],
+        "summary": "Add a new connector to a station",
+        "description": "Adds a connector for a given station. Requires admin, staff, or dealer roles.",
+        "operationId": "addConnector",
+        "parameters": [
+          {
+            "name": "station_id",
+            "in": "path",
+            "required": true,
+            "description": "ID of the station to which the connector will be added",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "example": "Type2"
+                  },
+                  "power_output": {
+                    "type": "number",
+                    "example": 22.5
+                  },
+                  "state": {
+                    "type": "string",
+                    "example": "available"
+                  },
+                  "status": {
+                    "type": "string",
+                    "example": "active"
+                  },
+                  "ocpp_id": {
+                    "type": "string",
+                    "example": "connector-001"
+                  },
+                  "last_updated": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-04-23T10:00:00Z"
+                  }
+                },
+                "required": ["type", "power_output", "state", "status", "ocpp_id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Connector added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Connector added successfully"
+                    },
+                    "connector": {
+                      "type": "object",
+                      "example": {
+                        "id": 1,
+                        "station_id": "123",
+                        "type": "Type2",
+                        "power_output": 22.5,
+                        "state": "available",
+                        "status": "active",
+                        "ocpp_id": "connector-001",
+                        "last_updated": "2025-04-23T10:00:00Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Internal Server Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
 
 
 };
