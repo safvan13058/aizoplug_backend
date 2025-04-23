@@ -2067,7 +2067,7 @@ const Swaggerdoc = {
         }
       }
     },
-    "/api/station/devices/{station_id}": {
+    "/app/api/station/devices/{station_id}": {
       "get": {
         "tags": ["Station Devices"],
         "summary": "Get connectors and/or plug switches for a station",
