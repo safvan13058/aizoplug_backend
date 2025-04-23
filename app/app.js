@@ -223,4 +223,11 @@ const {getchargingsession} = require('./chargingsession');
 
 app.get('/api/sessions/recent', validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'), getchargingsession);
 
+
+// ----------------------------------share access------------------------------------------------------
+const {shareaccess}=require('./accessshare')
+app.post('/api/device/accessshare/:station_id',
+   validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
+   shareaccess);
+
 module.exports = app

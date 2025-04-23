@@ -6,7 +6,7 @@ app.use(express.json());
 
 
 const shareaccess = async (req, res) => {
-    const client = await db.connect();
+    const client = await pool.connect();
     try {
         const { station_id } = req.params;
         const { serial, securitykey } = req.body;
