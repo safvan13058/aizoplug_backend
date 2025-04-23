@@ -1520,25 +1520,25 @@ const Swaggerdoc = {
                   "type": "string",
                   "example": "wallet"
                 },
-                "estimated_cost": {
-                  "type": "number",
-                  "example": 150.00
-                },
-                "promotion_id": {
-                  "type": "integer",
-                  "nullable": true,
-                  "example": 5
-                },
-                "sponsored_by": {
-                  "type": "string",
-                  "nullable": true,
-                  "example": "Tesla Inc"
-                },
-                "sponsorship_note": {
-                  "type": "string",
-                  "nullable": true,
-                  "example": "Promotional Free Charging"
-                }
+                // "estimated_cost": {
+                //   "type": "number",
+                //   "example": 150.00
+                // },
+                // "promotion_id": {
+                //   "type": "integer",
+                //   "nullable": true,
+                //   "example": 5
+                // },
+                // "sponsored_by": {
+                //   "type": "string",
+                //   "nullable": true,
+                //   "example": "Tesla Inc"
+                // },
+                // "sponsorship_note": {
+                //   "type": "string",
+                //   "nullable": true,
+                //   "example": "Promotional Free Charging"
+                // }
               },
               "required": ["vehicle_id", "connector_id", "payment_method", "estimated_cost"]
             }
