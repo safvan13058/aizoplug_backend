@@ -123,14 +123,14 @@ router.post('/start',
   });
 // POST /api/charging-sessions/stop
 router.post('/stop', async (req, res) => {
-  const { connector_id } = req.body;
+  const { ocppid } = req.body;
 
   try {
     // 1. Fetch ocpp_id from connector_id
     const connectorRes = await db.query(`
       SELECT ocpp_id FROM connectors
-      WHERE id = $1
-    `, [connector_id]);
+      WHERE ocpp_id = $1
+    `, [ocppid]);
 
     if (connectorRes.rows.length === 0) {
       throw new Error('Connector not found.');
