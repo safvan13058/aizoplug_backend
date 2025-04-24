@@ -451,7 +451,7 @@ client.on("message", async (topic, messageBuffer) => {
       }
     }
 
-    if (currentWh === 0) return console.warn("No valid energy reading found");
+    // if (currentWh === 0) return console.warn("No valid energy reading found");
 
     // 2. Get connector and station
     const connectorRes = await db.query(`
