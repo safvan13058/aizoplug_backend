@@ -475,10 +475,10 @@ client.on("message", async (topic, messageBuffer) => {
 
     const deltaWh = currentWh - (previousWh || 0);
 
-    if (deltaWh <= 0) {
-      console.warn("Meter value decreased or unchanged — skipping billing.");
-      return;
-    }
+    // if (deltaWh <= 0) {
+    //   console.warn("Meter value decreased or unchanged — skipping billing.");
+    //   return;
+    // }
 
     // 4. Get dynamic pricing
     const stationRes = await db.query(`
