@@ -563,7 +563,9 @@ client.on("message", async (topic, messageBuffer) => {
         updated_at = NOW()
       WHERE id = $6
     `, [currentWh, cost, voltage, ampere, power, sessionId]);
-    
+     console.log("Voltage L122:", voltage);
+      console.log("Current L122:", ampere);
+      console.log("Power L122:", power);
     // 9. Revenue sharing
     const partnersRes = await db.query(`
       SELECT user_id, share_percentage
