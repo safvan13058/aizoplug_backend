@@ -435,9 +435,9 @@ client.on("message", async (topic, messageBuffer) => {
        ampere = currentL1 ? parseFloat(currentL1.value) : null;
        power = powerL1 ? parseFloat(powerL1.value) : null;
     
-      console.log("Voltage L1:", voltage);
-      console.log("Current L1:", ampere);
-      console.log("Power L1:", power);
+      // console.log("Voltage L1:", voltage);
+      // console.log("Current L1:", ampere);
+      // console.log("Power L1:", power);
 
       if (energySample) {
         currentWh = parseFloat(energySample.value);
