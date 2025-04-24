@@ -234,8 +234,76 @@ const stationconnectors=async (req, res) => {
   }
 };
 
+const displayChargerAndStation = async (req, res) => {
+  const { ocppid } = req.params;
+
+  try {
+    const query = `
+      SELECT 
+        c.id AS connector_id,
+        c.type AS connector_type,
+        c.power_output,
+        c.state,
+        c.status,
+        c.ocpp_id,
+        c.last_updated,
+        c.created_at AS connector_created,
+        cs.id AS station_id,
+        cs.name AS station_name,
+        cs.latitude,
+        cs.longitude,
+        cs.amenities,
+        cs.contact_info,
+        cs.dynamic_pricing,
+        cs.created_at AS station_created,
+        cs.updated_at AS station_updated
+      FROM 
+        connectors c
+      JOIN 
+        charging_stations cs ON c.station_id = cs.id
+      WHERE 
+        c.ocpp_id = $1
+    `;
+
+    const { rows } = await pool.query(query, [ocppid]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: `No connector found with ocpp_id ${ocpp}` });
+    }
+
+    const row = rows[0];
+
+    const result = {
+      connector: {
+        id: row.connector_id,
+        type: row.connector_type,
+        power_output: row.power_output,
+        state: row.state,
+        status: row.status,
+        ocpp_id: row.ocpp_id,
+        last_updated: row.last_updated,
+        created_at: row.connector_created
+      },
+      station: {
+        id: row.station_id,
+        name: row.station_name,
+        latitude: row.latitude,
+        longitude: row.longitude,
+        amenities: row.amenities,
+        contact_info: row.contact_info,
+        dynamic_pricing: row.dynamic_pricing,
+        created_at: row.station_created,
+        updated_at: row.station_updated
+      }
+    };
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching charger and station by ocpp_id:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 
 
-
-module.exports = {addstations,editStation,listStations,deleteStation,listuserstation,stationconnectors};
+module.exports = {addstations,editStation,listStations,deleteStation,listuserstation,stationconnectors, displayChargerAndStation};

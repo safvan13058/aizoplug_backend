@@ -235,4 +235,10 @@ const {stationconnectors}=require('../dashboard/stations')
 app.get('/api/station/devices/:station_id',
   validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
   stationconnectors);
+
+const {displayChargerAndStation}=require('../dashboard/stations')
+
+app.get('/api/connector/qr/:ocppid',
+validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
+displayChargerAndStation)
 module.exports = app
