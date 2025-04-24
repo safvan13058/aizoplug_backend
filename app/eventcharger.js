@@ -200,9 +200,12 @@ async function updateConnectorstate(ocppId, state) {
     // Step 3: If disconnected, check for ongoing session
     if (state.toLowerCase() === 'disconnected') {
       const sessionRes = await db.query(
-        `SELECT id FROM charging_sessions 
-         WHERE connector_id = $1 AND status = 'ongoing' 
-         ORDER BY created_at DESC LIMIT 1`,
+        `SELECT cs.id AS session_id, cs.user_id, cs.cost, cs.connector_id, c.station_id
+         FROM charging_sessions cs
+         JOIN connectors c ON cs.connector_id = c.id
+         WHERE cs.connector_id = $1 AND cs.status = 'ongoing'
+         ORDER BY cs.created_at DESC
+         LIMIT 1`,
         [connectorId]
       );
 
@@ -211,7 +214,12 @@ async function updateConnectorstate(ocppId, state) {
         return;
       }
 
-      const sessionId = sessionRes.rows[0].id;
+      const {
+        session_id: sessionId,
+        user_id: userId,
+        cost,
+        station_id: stationId
+      } = sessionRes.rows[0];
 
       // Step 4: Mark session as completed
       await db.query(
@@ -220,6 +228,38 @@ async function updateConnectorstate(ocppId, state) {
          WHERE id = $1`,
         [sessionId]
       );
+      await db.query(`
+        INSERT INTO transactions (
+          user_id, session_id, type, amount, transaction_type, status, notes
+        ) VALUES (
+          $1, $2, 'debit', $3, 'charge', 'completed', $4
+        )
+      `, [userId, sessionId, cost, 'Charging fee for session']);
+
+      const partnersRes = await db.query(`
+        SELECT user_id, share_percentage
+        FROM user_station_partners
+        WHERE station_id = $1
+       `, [stationId]);
+     for (const partner of partnersRes.rows) {
+       const shareAmount = parseFloat(((cost * partner.share_percentage) / 100).toFixed(2));
+
+       await db.query(`
+         INSERT INTO transactions (
+         user_id, session_id, type, amount, transaction_type, status, notes
+          ) VALUES (
+          $1, $2, 'credit', $3, 'host_earning', 'completed', $4
+          )
+          `, [
+         partner.user_id,
+         sessionId,
+         shareAmount,
+         `Revenue share from station ${stationId}`
+       ]);
+
+       console.log(`Credited ₹${shareAmount} to partner ${partner.user_id}`);
+     }
+
 
       console.log(`✅ Charging session ${sessionId} marked as completed.`);
     }
@@ -256,7 +296,6 @@ client.on("message", async (topic, messageBuffer) => {
       // Skip if there's no status value
       return;
     }
-
     // const status = message?.status;
     if (!status)
       return
