@@ -72,32 +72,32 @@ client.on("connect", () => {
       console.log("🔍 Listening for all device shadow status changes (delta)...");
     }
   });
-  
+
 });
 
 client.on("message", async (topic, messageBuffer) => {
   if (topic.includes("/shadow/update/delta")) {
     const delta = JSON.parse(messageBuffer.toString());
 
-      // Extract the thingName from the topic
-      const thingName = topic.split("/")[2]; // This will be your ocppId
+    // Extract the thingName from the topic
+    const thingName = topic.split("/")[2]; // This will be your ocppId
 
-      // ✅ Check if the connector exists
-      const res = await db.query(`
+    // ✅ Check if the connector exists
+    const res = await db.query(`
         SELECT id FROM connectors WHERE ocpp_id = $1
       `, [thingName]);
-  
-      if (res.rows.length === 0) {
-        // thingName (ocpp_id) not found — silently skip
-        return;
-      }
-      // console.log("delta of charger==",delta)
 
-      if (delta.state && delta.state.status) {
-        const status = delta.state.status;
-        // console.log("Status from delta.state:", status);
-      
-      
+    if (res.rows.length === 0) {
+      // thingName (ocpp_id) not found — silently skip
+      return;
+    }
+    // console.log("delta of charger==",delta)
+
+    if (delta.state && delta.state.status) {
+      const status = delta.state.status;
+      // console.log("Status from delta.state:", status);
+
+
 
       if (status === "connected") {
         console.log(`✅ [${thingName}] is CONNECTED (from desired state).`);
@@ -280,8 +280,14 @@ client.on("message", async (topic, messageBuffer) => {
       const connectorId = connectorRes.rows[0].id;
 
       // 3b. Find ongoing session
+      // 3b. Find ongoing session
       const sessionRes = await db.query(
-        `SELECT id FROM charging_sessions WHERE connector_id = $1 AND status = 'ongoing' ORDER BY created_at DESC LIMIT 1`,
+        `SELECT cs.id AS session_id, cs.user_id, cs.cost, cs.connector_id, c.station_id
+         FROM charging_sessions cs
+         JOIN connectors c ON cs.connector_id = c.id
+         WHERE cs.connector_id = $1 AND cs.status = 'ongoing'
+         ORDER BY cs.created_at DESC
+         LIMIT 1`,
         [connectorId]
       );
 
@@ -290,13 +296,50 @@ client.on("message", async (topic, messageBuffer) => {
         return;
       }
 
-      const sessionId = sessionRes.rows[0].id;
+
+      const {
+        session_id: sessionId,
+        user_id: userId,
+        cost,
+        station_id: stationId
+      } = sessionRes.rows[0];
 
       // 3c. Update session to "stopped"
       await db.query(
         `UPDATE charging_sessions SET status = 'completed', end_time = NOW() WHERE id = $1`,
         [sessionId]
       );
+      await db.query(`
+        INSERT INTO transactions (
+          user_id, session_id, type, amount, transaction_type, status, notes
+        ) VALUES (
+          $1, $2, 'debit', $3, 'charge', 'completed', $4
+        )
+      `, [userId, sessionId, cost, 'Charging fee for session']);
+      // 5. Revenue sharing with station partners
+      const partnersRes = await db.query(`
+         SELECT user_id, share_percentage
+         FROM user_station_partners
+         WHERE station_id = $1
+        `, [stationId]);
+      for (const partner of partnersRes.rows) {
+        const shareAmount = parseFloat(((cost * partner.share_percentage) / 100).toFixed(2));
+
+        await db.query(`
+          INSERT INTO transactions (
+          user_id, session_id, type, amount, transaction_type, status, notes
+           ) VALUES (
+           $1, $2, 'credit', $3, 'host_earning', 'completed', $4
+           )
+           `, [
+          partner.user_id,
+          sessionId,
+          shareAmount,
+          `Revenue share from station ${stationId}`
+        ]);
+
+        console.log(`Credited ₹${shareAmount} to partner ${partner.user_id}`);
+      }
 
       // 3d. Update connector status
       await db.query(
@@ -323,7 +366,7 @@ client.on("message", async (topic, messageBuffer) => {
     if (!ocppId || !Array.isArray(meterValues)) {
       return; // silently skip
     }
-     
+
     console.log(`metervalue${ocppId}==payload==${meterValues}`)
 
     // 1. Extract Energy.Active.Import.Register
@@ -397,7 +440,7 @@ client.on("message", async (topic, messageBuffer) => {
     // 5. Compute cost
     const meterKWh = deltaWh / 1000;
     const cost = parseFloat((meterKWh * rate).toFixed(2));
-   
+
     // 6. Check wallet balance
     const walletCheck = await db.query(`
       SELECT balance FROM wallets
@@ -431,20 +474,20 @@ client.on("message", async (topic, messageBuffer) => {
       RETURNING balance
     `, [cost, userId]);
 
-    await db.query(`
-      INSERT INTO transactions (
-        user_id,
-        session_id,
-        type,
-        amount,
-        transaction_type,
-        status,
-        notes
-      ) VALUES (
-        $1, $2, 'debit', $3, 'charge', 'completed', $4
-      )
-    `, [userId, sessionId, cost, 'Charging fee deduction']);
-    
+    // await db.query(`
+    //   INSERT INTO transactions (
+    //     user_id,
+    //     session_id,
+    //     type,
+    //     amount,
+    //     transaction_type,
+    //     status,
+    //     notes
+    //   ) VALUES (
+    //     $1, $2, 'debit', $3, 'charge', 'completed', $4
+    //   )
+    // `, [userId, sessionId, cost, 'Charging fee deduction']);
+
 
     // 8. Update charging session
     await db.query(`
@@ -469,20 +512,20 @@ client.on("message", async (topic, messageBuffer) => {
         WHERE user_id = $2 AND is_default = TRUE AND status = 'active'
       `, [shareAmount, partner.user_id]);
 
-      await db.query(`
-        INSERT INTO transactions (
-          user_id,
-          session_id,
-          type,
-          amount,
-          transaction_type,
-          status,
-          notes
-        ) VALUES (
-          $1, $2, 'credit', $3, 'host_earning', 'completed', $4
-        )
-      `, [partner.user_id, sessionId, shareAmount, `Earning from station ${stationId}`]);
-      
+      // await db.query(`
+      //   INSERT INTO transactions (
+      //     user_id,
+      //     session_id,
+      //     type,
+      //     amount,
+      //     transaction_type,
+      //     status,
+      //     notes
+      //   ) VALUES (
+      //     $1, $2, 'credit', $3, 'host_earning', 'completed', $4
+      //   )
+      // `, [partner.user_id, sessionId, shareAmount, `Earning from station ${stationId}`]);
+
 
       console.log(`Credited ₹${shareAmount} to partner ${partner.user_id}`);
     }
