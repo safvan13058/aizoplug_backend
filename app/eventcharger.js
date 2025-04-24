@@ -241,24 +241,24 @@ async function updateConnectorstate(ocppId, state) {
         FROM user_station_partners
         WHERE station_id = $1
        `, [stationId]);
-     for (const partner of partnersRes.rows) {
-       const shareAmount = parseFloat(((cost * partner.share_percentage) / 100).toFixed(2));
+      for (const partner of partnersRes.rows) {
+        const shareAmount = parseFloat(((cost * partner.share_percentage) / 100).toFixed(2));
 
-       await db.query(`
+        await db.query(`
          INSERT INTO transactions (
          user_id, session_id, type, amount, transaction_type, status, notes
           ) VALUES (
           $1, $2, 'credit', $3, 'host_earning', 'completed', $4
           )
           `, [
-         partner.user_id,
-         sessionId,
-         shareAmount,
-         `Revenue share from station ${stationId}`
-       ]);
+          partner.user_id,
+          sessionId,
+          shareAmount,
+          `Revenue share from station ${stationId}`
+        ]);
 
-       console.log(`Credited ₹${shareAmount} to partner ${partner.user_id}`);
-     }
+        console.log(`Credited ₹${shareAmount} to partner ${partner.user_id}`);
+      }
 
 
       console.log(`✅ Charging session ${sessionId} marked as completed.`);
@@ -410,12 +410,35 @@ client.on("message", async (topic, messageBuffer) => {
 
     // 1. Extract Energy.Active.Import.Register
     let currentWh = 0;
+    let voltage = 0;
+    let ampere  = 0;
+    let power = 0;
 
 
     for (const entry of meterValues) {
       const energySample = entry.sampledValue?.find(
         sv => sv.measurand === "Energy.Active.Import.Register" && sv.value != null
       );
+
+      const sampled = entry.sampledValue || [];
+
+      const voltageL1 = sampled.find(
+        sv => sv.measurand === "Voltage" && sv.phase === "L1-N"
+      );
+      const currentL1 = sampled.find(
+        sv => sv.measurand === "Current.Import" && sv.phase === "L1-N"
+      );
+      const powerL1 = sampled.find(
+        sv => sv.measurand === "Power.Active.Import"
+      );
+       voltage = voltageL1 ? parseFloat(voltageL1.value) : null;
+       ampere = currentL1 ? parseFloat(currentL1.value) : null;
+       power = powerL1 ? parseFloat(powerL1.value) : null;
+    
+      console.log("Voltage L1:", voltage);
+      console.log("Current L1:", ampere);
+      console.log("Power L1:", power);
+
       if (energySample) {
         currentWh = parseFloat(energySample.value);
         console.log("currect wh==", currentWh)
@@ -531,10 +554,16 @@ client.on("message", async (topic, messageBuffer) => {
     // 8. Update charging session
     await db.query(`
       UPDATE charging_sessions
-      SET energy_used = $1, cost = cost + $2, updated_at = NOW()
-      WHERE id = $3
-    `, [currentWh, cost, sessionId]);
-
+      SET 
+        energy_used = $1,
+        cost = cost + $2,
+        voltage = $3,
+        ampere = $4,
+        power = $5,
+        updated_at = NOW()
+      WHERE id = $6
+    `, [currentWh, cost, voltage, ampere, power, sessionId]);
+    
     // 9. Revenue sharing
     const partnersRes = await db.query(`
       SELECT user_id, share_percentage
