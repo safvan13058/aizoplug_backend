@@ -2131,6 +2131,96 @@ const Swaggerdoc = {
         }
       }
     },
+    "/app/api/connector/qr/{ocppid}": {
+    "get": {
+      "summary": "Get connector and station info by OCPP ID",
+      "description": "Returns details of a connector and its associated charging station using the connector's OCPP ID.",
+      "tags": ["Connectors"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "ocppid",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "The OCPP ID of the connector"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Connector and station found",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "connector": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "type": { "type": "string" },
+                      "power_output": { "type": "number", "format": "float" },
+                      "state": { "type": "string" },
+                      "status": { "type": "string" },
+                      "ocpp_id": { "type": "string" },
+                      "last_updated": { "type": "string", "format": "date-time" },
+                      "created_at": { "type": "string", "format": "date-time" }
+                    }
+                  },
+                  "station": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "name": { "type": "string" },
+                      "latitude": { "type": "number", "format": "float" },
+                      "longitude": { "type": "number", "format": "float" },
+                      "amenities": { "type": "string" },
+                      "contact_info": { "type": "string" },
+                      "dynamic_pricing": { "type": "object" },
+                      "created_at": { "type": "string", "format": "date-time" },
+                      "updated_at": { "type": "string", "format": "date-time" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "No connector found with the given OCPP ID",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
     
 };
 
