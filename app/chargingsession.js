@@ -206,6 +206,6 @@ const sessionBilling = async (req, res) => {
     console.error('Error fetching session data:', error.message);
     res.status(500).json({ error: 'Internal server error' });
   }
-};
+}; 
 
 module.exports={getchargingsession,sessionBilling}
