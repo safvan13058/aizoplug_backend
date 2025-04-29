@@ -2320,7 +2320,146 @@ const Swaggerdoc = {
       }
     }
   },
-    
+    "/app/api/session/billing/{session_id}": {
+      "get": {
+        "summary": "Get billing details for a charging session",
+        "tags": ["Sessions Billing"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Unique ID of the charging session"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Billing session details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "session_id": {
+                      "type": "integer",
+                      "example": 12
+                    },
+                    "user_name": {
+                      "type": "string",
+                      "example": "Alice"
+                    },
+                    "vehicle_number": {
+                      "type": "string",
+                      "example": "XYZ1234"
+                    },
+                    "start_time": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-04-28T10:00:00Z"
+                    },
+                    "end_time": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-04-28T11:00:00Z"
+                    },
+                    "energy_used": {
+                      "type": "number",
+                      "format": "float",
+                      "example": 5.2
+                    },
+                    "power": {
+                      "type": "number",
+                      "format": "float",
+                      "example": 3.1
+                    },
+                    "ampere": {
+                      "type": "number",
+                      "format": "float",
+                      "example": 16
+                    },
+                    "voltage": {
+                      "type": "number",
+                      "format": "float",
+                      "example": 220
+                    },
+                    "cost": {
+                      "type": "number",
+                      "format": "float",
+                      "example": 120.00
+                    },
+                    "payment_method": {
+                      "type": "string",
+                      "enum": ["wallet", "RFID", "QR"],
+                      "example": "wallet"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["ongoing", "completed", "failed"],
+                      "example": "completed"
+                    },
+                    "transaction": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "example": 22
+                        },
+                        "amount": {
+                          "type": "number",
+                          "format": "float",
+                          "example": 120.00
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "debit"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "completed"
+                        }
+                      }
+                    },
+                    "connector": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "example": 5
+                          },
+                          "ocppid": {
+                            "type": "string",
+                            "example": "OCPP123"
+                          },
+                          "type": {
+                            "type": "string",
+                            "example": "Type2"
+                          },
+                          "deviceid": {
+                            "type": "string",
+                            "example": "ESP8266-ABC123"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
 };
 
 module.exports = Swaggerdoc;
