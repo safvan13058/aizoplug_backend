@@ -41,7 +41,7 @@ dashboard.post(
    addstations
  );
  dashboard.put(
-  '/api/update/station',
+  '/api/update/station/:id',
   validateJwt,
   authorizeRoles('admin','staff','dealer','host', 'customer'),
   editStation

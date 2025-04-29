@@ -275,120 +275,120 @@ const Swaggerdoc = {
       }
     }
   },
-  // "/app/api/update/vehicles/{id}": {
-  //   "put": {
-  //     "summary": "Update an existing vehicle",
-  //     "tags": ["Vehicles"],
-  //     "security": [
-  //       {
-  //         "bearerAuth": []
-  //       }
-  //     ],
-  //     "parameters": [
-  //       {
-  //         "name": "id",
-  //         "in": "path",
-  //         "required": true,
-  //         "description": "Vehicle ID to update",
-  //         "schema": {
-  //           "type": "integer"
-  //         }
-  //       }
-  //     ],
-  //     "requestBody": {
-  //       "required": true,
-  //       "content": {
-  //         "application/json": {
-  //           "schema": {
-  //             "type": "object",
-  //             "properties": {
-  //               "vehicle_number": {
-  //                 "type": "string",
-  //                 "example": "ABC123"
-  //               },
-  //               "vin_number": {
-  //                 "type": "string",
-  //                 "example": "1HGCM82633A123456"
-  //               },
-  //               "wheel_type": {
-  //                 "type": "string",
-  //                 "example": "All-Wheel Drive"
-  //               },
-  //               "make": {
-  //                 "type": "string",
-  //                 "example": "Tesla"
-  //               },
-  //               "model": {
-  //                 "type": "string",
-  //                 "example": "Model 3"
-  //               },
-  //               "auto_charging_enabled": {
-  //                 "type": "boolean",
-  //                 "example": true
-  //               }
-  //             }
-  //           }
-  //         }
-  //       }
-  //     },
-  //     "responses": {
-  //       "200": {
-  //         "description": "Vehicle updated successfully",
-  //         "content": {
-  //           "application/json": {
-  //             "schema": {
-  //               "type": "object",
-  //               "properties": {
-  //                 "message": {
-  //                   "type": "string",
-  //                   "example": "Vehicle updated successfully"
-  //                 },
-  //                 "vehicle": {
-  //                   "type": "object",
-  //                   "properties": {
-  //                     "id": {
-  //                       "type": "integer",
-  //                       "example": 1
-  //                     },
-  //                     "vehicle_number": {
-  //                       "type": "string",
-  //                       "example": "ABC123"
-  //                     },
-  //                     "vin_number": {
-  //                       "type": "string",
-  //                       "example": "1HGCM82633A123456"
-  //                     },
-  //                     "make": {
-  //                       "type": "string",
-  //                       "example": "Tesla"
-  //                     },
-  //                     "model": {
-  //                       "type": "string",
-  //                       "example": "Model 3"
-  //                     },
-  //                     "auto_charging_enabled": {
-  //                       "type": "boolean",
-  //                       "example": true
-  //                     }
-  //                   }
-  //                 }
-  //               }
-  //             }
-  //           }
-  //         }
-  //       },
-  //       "400": {
-  //         "description": "No fields to update"
-  //       },
-  //       "404": {
-  //         "description": "Vehicle not found"
-  //       },
-  //       "500": {
-  //         "description": "Internal Server Error"
-  //       }
-  //     }
-  //   }
-  // },
+  "/app/api/update/vehicles/{id}": {
+    "put": {
+      "summary": "Update an existing vehicle",
+      "tags": ["Vehicles"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "Vehicle ID to update",
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "vehicle_number": {
+                  "type": "string",
+                  "example": "ABC123"
+                },
+                "vin_number": {
+                  "type": "string",
+                  "example": "1HGCM82633A123456"
+                },
+                "wheel_type": {
+                  "type": "string",
+                  "example": "All-Wheel Drive"
+                },
+                "make": {
+                  "type": "string",
+                  "example": "Tesla"
+                },
+                "model": {
+                  "type": "string",
+                  "example": "Model 3"
+                },
+                "auto_charging_enabled": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Vehicle updated successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Vehicle updated successfully"
+                  },
+                  "vehicle": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "example": 1
+                      },
+                      "vehicle_number": {
+                        "type": "string",
+                        "example": "ABC123"
+                      },
+                      "vin_number": {
+                        "type": "string",
+                        "example": "1HGCM82633A123456"
+                      },
+                      "make": {
+                        "type": "string",
+                        "example": "Tesla"
+                      },
+                      "model": {
+                        "type": "string",
+                        "example": "Model 3"
+                      },
+                      "auto_charging_enabled": {
+                        "type": "boolean",
+                        "example": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "No fields to update"
+        },
+        "404": {
+          "description": "Vehicle not found"
+        },
+        "500": {
+          "description": "Internal Server Error"
+        }
+      }
+    }
+  },
   "/app/api/delete/vehicles/{id}": {
     "delete": {
       "summary": "Delete an existing vehicle",
@@ -1388,38 +1388,8 @@ const Swaggerdoc = {
       }
     }
   },
-  "/dashboard/api/update/station": {
-    "put": {
-      "tags": ["Charging Stations"],
-      "summary": "Update a charging station",
-      "security": [{ "bearerAuth": [] }],
-      "parameters": [
-        {
-          "name": "id",
-          "in": "query",
-          "required": true,
-          "schema": { "type": "integer" }
-        }
-      ],
-      "requestBody": {
-        "required": true,
-        "content": {
-          "application/json": {
-            "schema": {
-              "type": "object",
-              "description": "Fields to update"
-            }
-          }
-        }
-      },
-      "responses": {
-        "200": { "description": "Station updated successfully" },
-        "400": { "description": "No fields provided" },
-        "404": { "description": "Station not found" },
-        "500": { "description": "Internal server error" }
-      }
-    }
-  },
+ 
+
   "/dashboard/api/list/station": {
     "get": {
       "tags": ["Charging Stations"],
@@ -2221,7 +2191,7 @@ const Swaggerdoc = {
       }
     }
   },
-  "/api/update/vehicles/{id}": {
+  "/dashborad/api/update/station/{id}": {
     "patch": {
       "summary": "Update an existing charging station",
       "description": "Dynamically updates one or more fields of a charging station.",
@@ -2270,7 +2240,7 @@ const Swaggerdoc = {
                 "dynamic_pricing": {
                   "type": "object",
                   "example": {
-                    "rate_per_kWh": 0.25
+                    "rate_per_kW": 0.25
                   }
                 }
               },
