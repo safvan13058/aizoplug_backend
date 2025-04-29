@@ -202,10 +202,10 @@ const sessionBilling = async (req, res) => {
 
     const connector = [];
 
-    if (row.ocpp_id_id) {
+    if (row.ocpp_id) {
       connector.push({
         id: row.connector_id,
-        ocppid:row.ocppid,
+        ocppid:row.ocpp_id,
         type: row.connector_type
       });
     }
