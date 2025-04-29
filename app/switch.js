@@ -3,8 +3,8 @@ const express = require('express');
 const router = express.Router();
 router.use(express.json());
 const pool = require('../middelware/db'); // your PostgreSQL connection instance
-const { publishToConnector } = require('./eventcharger')
 const { validateJwt, authorizeRoles } = require('../middelware/auth')
+
 
 
 

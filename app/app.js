@@ -222,7 +222,7 @@ const {addstations} = require('../dashboard/stations');
 const {getchargingsession} = require('./chargingsession');
 
 app.get('/api/sessions/recent', validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'), getchargingsession);
-
+app.get('/api/session/billing/:session_id',sessionbilling)
 
 // ----------------------------------share access------------------------------------------------------
 const {shareaccess}=require('./accessshare')

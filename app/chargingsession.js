@@ -167,5 +167,43 @@ const getchargingsession = async (req, res) => {
   }
 };
 
-  
-module.exports={getchargingsession}
+const sessionbilling= async (req, res) => {
+  const sessionId = req.params.session_id;
+
+  try {
+    const { rows } = await pool.query(
+      `
+      SELECT 
+        cs.*,
+        u.name AS user_name,
+        v.name AS vehicle_name,
+        c.connector_type,
+        ps.switch_name,
+        pr.rate_name AS promotion_name,
+        t.id AS transaction_id,
+        t.amount AS transaction_amount,
+        t.type AS transaction_type,
+        t.status AS transaction_status
+      FROM charging_sessions cs
+      LEFT JOIN users u ON cs.user_id = u.id
+      LEFT JOIN vehicles v ON cs.vehicle_id = v.id
+      LEFT JOIN connectors c ON cs.connector_id = c.id
+      LEFT JOIN plug_switches ps ON cs.plug_switches_id = ps.id
+      LEFT JOIN promotional_rates pr ON cs.promotion_id = pr.id
+      LEFT JOIN transactions t ON t.session_id = cs.id
+      WHERE cs.id = $1
+      `,
+      [sessionId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Session not found" });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error("Error fetching session data:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+module.exports={getchargingsession,sessionbilling}

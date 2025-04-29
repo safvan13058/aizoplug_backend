@@ -73,6 +73,14 @@ client.on("connect", () => {
     }
   });
 
+  client.subscribe("$aws/things/+/shadow/update/accepted", { qos: 1 }, (err) => {
+    if (err) {
+      console.error("Subscription error:", err);
+    } else {
+      console.log("Subscribed to device shadow updates");
+    }
+  });
+
 });
 
 client.on("message", async (topic, messageBuffer) => {
@@ -622,9 +630,21 @@ function publishToConnector(thingId, messageObj) {
   });
 
 }
+function turnonswitch(thingName,payload ) {
+  // if (state !== 'ON' && state !== 'OFF') {
+  //   console.error("Invalid state. Use 'ON' or 'OFF'.");
+  //   return;
+  // }
+  const topic = `$aws/things/${thingName}/shadow/update`;
 
-
-
+  client.publish(topic, payload, { qos: 1 }, (err) => {
+    if (err) {
+      console.error('Error publishing light state:', err);
+    } else {
+      console.log(`Light command sent to ${thingName}`);
+    }
+  });
+}
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
@@ -652,4 +672,4 @@ process.on("SIGINT", async () => {
   process.exit(0);
 });
 
-module.exports = { publishToConnector };
+module.exports = { publishToConnector,turnonswitch};
