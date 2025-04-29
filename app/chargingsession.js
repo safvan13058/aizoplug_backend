@@ -167,7 +167,7 @@ const getchargingsession = async (req, res) => {
   }
 };
 
-const sessionbilling= async (req, res) => {
+const sessionBilling = async (req, res) => {
   const sessionId = req.params.session_id;
 
   try {
@@ -197,13 +197,15 @@ const sessionbilling= async (req, res) => {
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: "Session not found" });
+      return res.status(404).json({ error: 'Session not found' });
     }
 
-    res.json(rows[0]);
+    // Return single result (assuming one transaction per session)
+    res.status(200).json(rows[0]);
   } catch (error) {
-    console.error("Error fetching session data:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error('Error fetching session data:', error.message);
+    res.status(500).json({ error: 'Internal server error' });
   }
-}
+};
+
 module.exports={getchargingsession,sessionbilling}
