@@ -74,6 +74,8 @@ router.post('/start',
        throw new Error('Connector is not ready ,Please connect the connector to the vehicle before starting the session.');
      }
 
+    
+
 
 
       // 2. Create the session
@@ -118,6 +120,10 @@ router.post('/start',
 
     } catch (err) {
       await db.query('ROLLBACK');
+      if (err.code === '23503' && err.constraint === 'charging_sessions_vehicle_id_fkey') {
+        return res.status(400).json({ error: 'Invalid vehicle_id: Vehicle does not exist' });
+      }
+      
       res.status(400).json({ error: err.message });
     }
   });
