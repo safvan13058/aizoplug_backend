@@ -176,10 +176,13 @@ const sessionBilling = async (req, res) => {
       SELECT 
         cs.*,
         u.name AS user_name,
-        v.name AS vehicle_name,
-        c.connector_type,
+        v.vehicle_number,
+        c.ocpp_id,
+        ps.device_id AS switch_id,
         ps.switch_name,
-        pr.rate_name AS promotion_name,
+        ps.type AS switch_type,
+        ps.status AS switch_status,
+        ps.last_heartbeat,
         t.id AS transaction_id,
         t.amount AS transaction_amount,
         t.type AS transaction_type,
@@ -189,7 +192,6 @@ const sessionBilling = async (req, res) => {
       LEFT JOIN vehicles v ON cs.vehicle_id = v.id
       LEFT JOIN connectors c ON cs.connector_id = c.id
       LEFT JOIN plug_switches ps ON cs.plug_switches_id = ps.id
-      LEFT JOIN promotional_rates pr ON cs.promotion_id = pr.id
       LEFT JOIN transactions t ON t.session_id = cs.id
       WHERE cs.id = $1
       `,
@@ -200,12 +202,55 @@ const sessionBilling = async (req, res) => {
       return res.status(404).json({ error: 'Session not found' });
     }
 
-    // Return single result (assuming one transaction per session)
-    res.status(200).json(rows[0]);
+    const row = rows[0];
+
+    const connector = [];
+
+    if (row.connector_id) {
+      connector.push({
+        id: row.connector_id,
+        ocppid:row.ocppid,
+        type: row.connector_type
+      });
+    }
+
+    if (row.switch_id) {
+      connector.push({
+        deviceid: row.switch_id
+      });
+    }
+
+    // Build response excluding raw connector/plug_switch columns
+    const response = {
+      session_id: row.id,
+      user_name: row.user_name,
+      vehicle_number: row.vehicle_number,
+      start_time: row.start_time,
+      end_time: row.end_time,
+      energy_used: row.energy_used,
+      power: row.power,
+      ampere: row.ampere,
+      voltage: row.voltage,
+      cost: row.cost,
+      payment_method: row.payment_method,
+      status: row.status,
+      transaction: {
+        id: row.transaction_id,
+        amount: row.transaction_amount,
+        type: row.transaction_type,
+        status: row.transaction_status
+      },
+      connector // combined array from connector or switch
+    };
+
+    res.status(200).json(response);
   } catch (error) {
     console.error('Error fetching session data:', error.message);
     res.status(500).json({ error: 'Internal server error' });
   }
-}; 
+};
+
+module.exports = sessionBilling;
+
 
 module.exports={getchargingsession,sessionBilling}
