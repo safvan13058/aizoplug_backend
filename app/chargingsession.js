@@ -208,4 +208,4 @@ const sessionBilling = async (req, res) => {
   }
 };
 
-module.exports={getchargingsession,sessionbilling}
+module.exports={getchargingsession,sessionBilling}
