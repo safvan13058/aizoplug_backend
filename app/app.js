@@ -219,10 +219,10 @@ const {addstations} = require('../dashboard/stations');
    addstations
  );
 // ----------------------------------charging sessions------------------
-const {getchargingsession,sessionbilling} = require('./chargingsession');
+const {getchargingsession,sessionBilling} = require('./chargingsession');
 
 app.get('/api/sessions/recent', validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'), getchargingsession);
-app.get('/api/session/billing/:session_id',sessionbilling)
+app.get('/api/session/billing/:session_id',sessionBilling)
 
 // ----------------------------------share access------------------------------------------------------
 const {shareaccess}=require('./accessshare')
