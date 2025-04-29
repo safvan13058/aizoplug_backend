@@ -219,7 +219,7 @@ const {addstations} = require('../dashboard/stations');
    addstations
  );
 // ----------------------------------charging sessions------------------
-const {getchargingsession} = require('./chargingsession');
+const {getchargingsession,sessionbilling} = require('./chargingsession');
 
 app.get('/api/sessions/recent', validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'), getchargingsession);
 app.get('/api/session/billing/:session_id',sessionbilling)
