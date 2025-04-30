@@ -16,6 +16,30 @@ const toggleswitch = async (req, res) => {
     if (!deviceid || !['on', 'off'].includes(state.toLowerCase())) {
       return res.status(400).json({ error: 'Invalid payload. Provide deviceid and state (on/off).' });
     }
+    if (state==='off'){
+         // 4. Publish MQTT message
+      const payload = {
+        state: {
+          desired: {
+            command: "power",
+            c: switchNumber,
+            s: state.toLowerCase(),
+            u: username,
+            v: voltage.toString()
+          }
+        }
+      };
+  
+      turnonswitch(thingName, payload, async (err) => {
+        if (err) {
+          await pool.query('ROLLBACK');
+          return res.status(500).json({ error: 'Failed to publish to AWS IoT' });
+        }
+  
+        await pool.query('COMMIT');
+        res.json({ message: `Switch ${switchNumber} of ${thingName} turned ${state}`, session: sessionRes.rows[0] });
+      });
+    }
   
     const [thingName, switchNumber] = deviceid.split('_');
     if (!thingName || !switchNumber) {
@@ -103,7 +127,5 @@ const toggleswitch = async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   };
-  
-  
 
 module.exports = {toggleswitch};
