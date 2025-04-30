@@ -17,14 +17,24 @@ const toggleswitch=async (req, res) => {
     const turnOn = state === 'ON';
   
     const payload = {
-      state: {
-        desired: {
-          [`s${switchNumber}`]: turnOn ? "1" : "0",
-          [`v${switchNumber}`]: turnOn ? "100" : "0",
-          t: turnOn ? "ON" : "OFF"
+        state: {
+          desired: {
+            update_status: "0",
+            command: "power",
+            c: "1",
+            s: switchNumber.toString(),
+            v: "254",
+            id: thingName, // Replace with dynamic device ID if needed
+            delay: 0,
+            n: "0",
+            t: state, // "ON" or "OFF"
+            [`s${switchNumber}`]: state === "ON" ? "1" : "0",
+            [`v${switchNumber}`]: "254",
+            u: "Touch"
+          }
         }
-      }
-    };
+      };
+      
   
     turnonswitch(thingName, payload, (err) => {
         if (err) {
