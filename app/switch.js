@@ -9,19 +9,25 @@ const {turnonswitch}=require('./eventcharger')
 // API to turn switch ON or OFF
 // API to turn switch ON or OFF
 const toggleswitch = async (req, res) => {
-    const { thingName, switchNumber, state } = req.body;
+    const { deviceid, state } = req.body;
   
-    if (!thingName || !switchNumber || !['on', 'off'].includes(state.toLowerCase())) {
-      return res.status(400).json({ error: 'Invalid payload. Provide thingName, switchNumber, and state (on/off).' });
+    if (!deviceid || !['on', 'off'].includes(state.toLowerCase())) {
+      return res.status(400).json({ error: 'Invalid payload. Provide deviceid and state (on/off).' });
+    }
+  
+    const [thingName, switchNumber] = deviceid.split('_');
+  
+    if (!thingName || !switchNumber) {
+      return res.status(400).json({ error: 'Invalid deviceid format. Expected format: <thingName>_<switchNumber>' });
     }
   
     const payload = {
       state: {
         desired: {
           command: "power",
-          c: switchNumber.toString(),
+          c: switchNumber,
           s: state.toLowerCase(),
-          u: "safvan13473@gmail.com"
+          u: deviceid
         }
       }
     };
@@ -30,8 +36,9 @@ const toggleswitch = async (req, res) => {
       if (err) {
         return res.status(500).json({ error: 'Failed to publish to AWS IoT' });
       }
-      res.json({ message: `Switch ${switchNumber} turned ${state}` });
+      res.json({ message: `Switch ${switchNumber} of ${thingName} turned ${state}` });
     });
   };
+  
 
 module.exports = {toggleswitch};
