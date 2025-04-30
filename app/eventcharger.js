@@ -642,6 +642,64 @@ function turnonswitch(thingName, payload, callback) {
     callback(err);
   });
 }
+client.on("message", async (topic, message) => {
+  try {
+    const payload = JSON.parse(message.toString());
+    const desired = payload.state?.desired;
+    if (!desired) return;
+
+    const { command, c, s, id } = desired;
+
+    if (command !== "power") return;
+
+    const deviceid = `${id}_${c}`;
+    const switchState = s; // '0' = OFF, '1' = ON
+
+    console.log(`📥 Received shadow update for ${deviceid}, state: ${switchState}`);
+
+    // Only act if switch is OFF
+    if (switchState === "0") {
+      // 1. Check if connector exists
+      const connectorCheck = await pool.query(
+        `SELECT id FROM plug_switches WHERE device_id = $1`,
+        [deviceid]
+      );
+
+      if (connectorCheck.rows.length === 0) {
+        console.warn(`⚠️ No connector found for device_id: ${deviceid}`);
+        return;
+      }
+
+      const connectorId = connectorCheck.rows[0].id;
+
+      // 2. Check for ongoing session
+      const sessionResult = await pool.query(
+        `SELECT cs.* FROM charging_sessions cs
+         WHERE cs.plug_switches_id = $1 AND cs.status = 'ongoing'
+         ORDER BY cs.created_at DESC LIMIT 1`,
+        [connectorId]
+      );
+
+      if (sessionResult.rows.length > 0) {
+        const session = sessionResult.rows[0];
+        console.log(`🔌 Ending ongoing session ID: ${session.id} for ${deviceid}`);
+
+        await pool.query(
+          `UPDATE charging_sessions SET status = 'completed', ended_at = NOW()
+           WHERE id = $1`,
+          [session.id]
+        );
+
+        console.log(`✅ Session ${session.id} marked as completed.`);
+      } else {
+        console.log(`ℹ️ No ongoing session found for ${deviceid}`);
+      }
+    }
+  } catch (err) {
+    console.error("🚨 Error processing MQTT message:", err.message);
+  }
+});
+
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
