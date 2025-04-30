@@ -245,6 +245,6 @@ displayChargerAndStation)
 
 // -----------------------------------switch -----------------------------
 const {toggleswitch}=require('./switch')
-app.post('/api/toggle/switch',toggleswitch)
+app.post('/api/toggle/switch',validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),toggleswitch)
 
 module.exports = app
