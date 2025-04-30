@@ -660,7 +660,7 @@ client.on("message", async (topic, message) => {
     // Only act if switch is OFF
     if (switchState === "0") {
       // 1. Check if connector exists
-      const connectorCheck = await pool.query(
+      const connectorCheck = await db.query(
         `SELECT id FROM plug_switches WHERE device_id = $1`,
         [deviceid]
       );
@@ -673,7 +673,7 @@ client.on("message", async (topic, message) => {
       const connectorId = connectorCheck.rows[0].id;
 
       // 2. Check for ongoing session
-      const sessionResult = await pool.query(
+      const sessionResult = await db.query(
         `SELECT cs.* FROM charging_sessions cs
          WHERE cs.plug_switches_id = $1 AND cs.status = 'ongoing'
          ORDER BY cs.created_at DESC LIMIT 1`,
