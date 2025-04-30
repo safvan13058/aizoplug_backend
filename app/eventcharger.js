@@ -684,7 +684,7 @@ client.on("message", async (topic, message) => {
         const session = sessionResult.rows[0];
         console.log(`🔌 Ending ongoing session ID: ${session.id} for ${deviceid}`);
 
-        await pool.query(
+        await db.query(
           `UPDATE charging_sessions SET status = 'completed', ended_at = NOW()
            WHERE id = $1`,
           [session.id]
