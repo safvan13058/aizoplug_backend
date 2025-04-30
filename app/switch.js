@@ -9,7 +9,7 @@ const {turnonswitch}=require('./eventcharger')
 // API to turn switch ON or OFF
 // API to turn switch ON or OFF
 const toggleswitch = async (req, res) => {
-    const { deviceid, state } = req.body;
+    const { deviceid, state ,voltage=100} = req.body;
   
     if (!deviceid || !['on', 'off'].includes(state.toLowerCase())) {
       return res.status(400).json({ error: 'Invalid payload. Provide deviceid and state (on/off).' });
@@ -27,7 +27,8 @@ const toggleswitch = async (req, res) => {
           command: "power",
           c: switchNumber,
           s: state.toLowerCase(),
-          u: deviceid
+          u: deviceid,
+          v:voltage
         }
       }
     };
