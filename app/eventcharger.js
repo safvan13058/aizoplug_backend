@@ -719,6 +719,8 @@ client.on("message", async (topic, message) => {
       const end = new Date(); // now
       const durationMinutes = Math.max(Math.ceil((end - new Date(start_time)) / 60000), 1); // at least 1 minute
       console.log("duration",durationMinutes)
+      console.log("rate per mint", rate)
+
       const cost = parseFloat((durationMinutes * rate).toFixed(2));
       
       // 3. Wallet check
