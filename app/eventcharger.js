@@ -675,25 +675,144 @@ client.on("message", async (topic, message) => {
       // 2. Check for ongoing session
       const sessionResult = await db.query(
         `SELECT cs.* FROM charging_sessions cs
-         WHERE cs.plug_switches_id = $1 AND cs.status = 'ongoing'
+         WHERE cs.plug_switches_id = (
+           SELECT id FROM plug_switches WHERE device_id = $1
+         ) AND cs.status = 'ongoing'
          ORDER BY cs.created_at DESC LIMIT 1`,
-        [connectorId]
+        [deviceid]
       );
-
-      if (sessionResult.rows.length > 0) {
-        const session = sessionResult.rows[0];
-        console.log(`🔌 Ending ongoing session ID: ${session.id} for ${deviceid}`);
-
-        await db.query(
-          `UPDATE charging_sessions SET status = 'completed', end_time = NOW()
-           WHERE id = $1`,
-          [session.id]
-        );
-
-        console.log(`✅ Session ${session.id} marked as completed.`);
-      } else {
-        console.log(`ℹ️ No ongoing session found for ${deviceid}`);
+      
+      if (sessionResult.rows.length === 0) {
+        return console.warn("No ongoing session for device", deviceid);
       }
+      
+      const session = sessionResult.rows[0];
+      const { id: sessionId, user_id: userId, energy_used: previousWh, start_time, plug_switches_id,voltage, ampere, power } = session;
+      
+      const deltaWh = currentWh - (previousWh || 0);
+      // const voltage, ampere, power are assumed available from outer context
+      
+      // 1. Get dynamic pricing from plug_switches
+      const plugSwitchRes = await db.query(`
+        SELECT dynamic_pricing FROM plug_switches WHERE device_id = $1
+      `, [deviceid]);
+      
+      const pricing = plugSwitchRes.rows[0]?.dynamic_pricing;
+      if (!pricing || !pricing.base_rate) {
+        return console.warn("No pricing info available for plug switch", deviceid);
+      }
+      
+      let rate = pricing.base_rate; // base_rate is per minute
+      
+      if (pricing.time_slots && Array.isArray(pricing.time_slots)) {
+        const sessionStart = new Date(start_time);
+        const timeStr = sessionStart.toTimeString().substring(0, 5); // HH:MM
+      
+        for (const slot of pricing.time_slots) {
+          if (timeStr >= slot.start && timeStr <= slot.end) {
+            rate = slot.rate;
+            break;
+          }
+        }
+      }
+      
+      // 2. Compute cost based on session duration
+      const end = new Date(); // now
+      const durationMinutes = Math.max(Math.ceil((end - new Date(start_time)) / 60000), 1); // at least 1 minute
+      const cost = parseFloat((durationMinutes * rate).toFixed(2));
+      
+      // 3. Wallet check
+      const walletCheck = await db.query(`
+        SELECT balance FROM wallets
+        WHERE user_id = $1 AND is_default = TRUE AND status = 'active'
+      `, [userId]);
+      
+      if (walletCheck.rows.length === 0) {
+        return console.warn("Wallet not found or inactive for user", userId);
+      }
+      
+      const currentBalance = parseFloat(walletCheck.rows[0].balance);
+      
+      if (currentBalance < cost) {
+        console.warn(`User ${userId} has insufficient balance (₹${currentBalance}), required ₹${cost}`);
+      
+     
+        return;
+      }
+      
+      // 4. Deduct cost
+      await db.query(`
+        UPDATE wallets
+        SET balance = balance - $1
+        WHERE user_id = $2 AND is_default = TRUE AND status = 'active'
+      `, [cost, userId]);
+
+       await db.query(`
+      INSERT INTO transactions (
+        user_id,
+        session_id,
+        type,
+        amount,
+        transaction_type,
+        status,
+        notes
+      ) VALUES (
+        $1, $2, 'debit', $3, 'amenity_usage', 'completed', $4
+      )
+    `, [userId, sessionId, cost, 'Charging fee deduction']);
+      
+      // 5. Update charging session
+      await db.query(`
+        UPDATE charging_sessions
+        SET 
+          energy_used = $1,
+          cost = cost + $2,
+          voltage = $3,
+          ampere = $4,
+          power = $5,
+          updated_at = NOW(),
+          end_time = $6
+        WHERE id = $7
+      `, [currentWh, cost, voltage, ampere, power, end, sessionId]);
+          
+      // 6. Revenue sharing
+      const stationResult = await db.query(`
+        SELECT station_id FROM plug_switches WHERE id = $1
+      `, [plug_switches_id]);
+      
+      const stationId = stationResult.rows[0]?.station_id;
+      
+      const partnersRes = await db.query(`
+        SELECT user_id, share_percentage
+        FROM user_station_partners
+        WHERE station_id = $1
+      `, [stationId]);
+      
+      for (const partner of partnersRes.rows) {
+        const shareAmount = parseFloat(((cost * partner.share_percentage) / 100).toFixed(2));
+      
+        await db.query(`
+          UPDATE wallets
+          SET balance = balance + $1
+          WHERE user_id = $2 AND is_default = TRUE AND status = 'active'
+        `, [shareAmount, partner.user_id]);
+
+        await db.query(`
+        INSERT INTO transactions (
+          user_id,
+          session_id,
+          type,
+          amount,
+          transaction_type,
+          status,
+          notes
+        ) VALUES (
+          $1, $2, 'credit', $3, 'host_earning', 'completed', $4
+        )
+      `, [partner.user_id, sessionId, shareAmount, `Earning from station ${stationId}`]);
+      
+        console.log(`Credited ₹${shareAmount} to partner ${partner.user_id}`);
+      }      
     }
   } catch (err) {
     console.error("🚨 Error processing MQTT message:", err.message);
