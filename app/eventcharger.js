@@ -635,7 +635,7 @@ function turnonswitch(thingName,payload ) {
   //   console.error("Invalid state. Use 'ON' or 'OFF'.");
   //   return;
   // }
-  const topic = `$aws/things/${thingName}/shadow/update`;
+  const topic = `$aws/things/${thingName}`;
 
   client.publish(topic, JSON.stringify(payload), { qos: 1 }, (err) => {
     if (err) {
