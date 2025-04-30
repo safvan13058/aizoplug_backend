@@ -21,33 +21,36 @@ const toggleswitch = async (req, res) => {
     if (!thingName || !switchNumber) {
       return res.status(400).json({ error: 'Invalid deviceid format. Expected format: <thingName>_<switchNumber>' });
     }
-    if (state==='off'){
-        // 4. Publish MQTT message
-     const payload = {
-       state: {
-         desired: {
-           command: "power",
-           c: switchNumber,
-           s: state.toLowerCase(),
-           u: username,
-           v: voltage.toString()
-         }
-       }
-     };
- 
-     turnonswitch(thingName, payload, async (err) => {
-       if (err) {
-         await pool.query('ROLLBACK');
-         return res.status(500).json({ error: 'Failed to publish to AWS IoT' });
-       }
- 
-       await pool.query('COMMIT');
-       return res.json({ message: `Switch ${switchNumber} of ${thingName} turned ${state}`, session: sessionRes.rows[0] });
-     });
-     return;  
-   }
- 
   
+    // Handle the 'off' state first
+    if (state.toLowerCase() === 'off') {
+      // 4. Publish MQTT message to turn off the switch
+      const payload = {
+        state: {
+          desired: {
+            command: "power",
+            c: switchNumber,
+            s: state.toLowerCase(),
+            u: username,
+            v: voltage.toString()
+          }
+        }
+      };
+  
+      turnonswitch(thingName, payload, async (err) => {
+        if (err) {
+          await pool.query('ROLLBACK');
+          return res.status(500).json({ error: 'Failed to publish to AWS IoT' });
+        }
+  
+        // No need to proceed with the rest of the logic for 'off' state
+        await pool.query('COMMIT');
+        return res.json({ message: `Switch ${switchNumber} of ${thingName} turned ${state}` });
+      });
+      return; // Early return to prevent further execution for 'off' state
+    }
+  
+    // Proceed with full logic for 'on' state
     try {
       await pool.query('BEGIN');
   
@@ -101,7 +104,7 @@ const toggleswitch = async (req, res) => {
         sponsorship_note
       ]);
   
-      // 4. Publish MQTT message
+      // 4. Publish MQTT message to turn on the switch
       const payload = {
         state: {
           desired: {
@@ -129,5 +132,6 @@ const toggleswitch = async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   };
+  
 
 module.exports = {toggleswitch};
