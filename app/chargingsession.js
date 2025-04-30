@@ -189,7 +189,7 @@ const sessionBilling = async (req, res) => {
       LEFT JOIN connectors c ON cs.connector_id = c.id
       LEFT JOIN plug_switches ps ON cs.plug_switches_id = ps.id
       LEFT JOIN transactions t ON t.session_id = cs.id
-      LEFT JOIN transactions t1 ON t1.user_id = u.id
+      LEFT JOIN transactions t1 ON t1.user_id = u.id AND t1.transaction_type = 'charge'
       WHERE cs.id = $1
       `,
       [sessionId]
