@@ -241,4 +241,10 @@ const {displayChargerAndStation}=require('../dashboard/stations')
 app.get('/api/connector/qr/:ocppid',
 validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
 displayChargerAndStation)
+
+
+// -----------------------------------switch -----------------------------
+const {toggleswitch}=require('./switch')
+app.post('/api/toggle/switch',toggleswitch)
+
 module.exports = app
