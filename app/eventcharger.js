@@ -637,7 +637,7 @@ function turnonswitch(thingName,payload ) {
   // }
   const topic = `$aws/things/${thingName}/shadow/update`;
 
-  client.publish(topic, payload, { qos: 1 }, (err) => {
+  client.publish(topic, JSON.stringify(payload), { qos: 1 }, (err) => {
     if (err) {
       console.error('Error publishing light state:', err);
     } else {
