@@ -27,7 +27,7 @@ const toggleswitch = async (req, res) => {
           command: "power",
           c: switchNumber,
           s: state.toLowerCase(),
-          u: deviceid,
+          u: req.user.username,
           v:voltage
         }
       }
