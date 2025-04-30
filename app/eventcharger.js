@@ -774,7 +774,8 @@ client.on("message", async (topic, message) => {
           ampere = $4,
           power = $5,
           updated_at = NOW(),
-          end_time = $6
+          end_time = $6,
+           status='completed'
         WHERE id = $7
       `, [0, cost, voltage, ampere, power, end, sessionId]);
           
