@@ -718,6 +718,7 @@ client.on("message", async (topic, message) => {
       // 2. Compute cost based on session duration
       const end = new Date(); // now
       const durationMinutes = Math.max(Math.ceil((end - new Date(start_time)) / 60000), 1); // at least 1 minute
+      console.log("duration",durationMinutes)
       const cost = parseFloat((durationMinutes * rate).toFixed(2));
       
       // 3. Wallet check
