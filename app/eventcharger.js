@@ -773,7 +773,7 @@ client.on("message", async (topic, message) => {
           updated_at = NOW(),
           end_time = $6
         WHERE id = $7
-      `, [currentWh, cost, voltage, ampere, power, end, sessionId]);
+      `, [0, cost, voltage, ampere, power, end, sessionId]);
           
       // 6. Revenue sharing
       const stationResult = await db.query(`
