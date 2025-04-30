@@ -630,12 +630,8 @@ function publishToConnector(thingId, messageObj) {
   });
 
 }
-function turnonswitch(thingName,payload ) {
-  // if (state !== 'ON' && state !== 'OFF') {
-  //   console.error("Invalid state. Use 'ON' or 'OFF'.");
-  //   return;
-  // }
-  const topic = `$aws/things/${thingName}`;
+function turnonswitch(thingName, payload, callback) {
+  const topic = `$aws/things/${thingName}/shadow/update`;
 
   client.publish(topic, JSON.stringify(payload), { qos: 1 }, (err) => {
     if (err) {
@@ -643,9 +639,9 @@ function turnonswitch(thingName,payload ) {
     } else {
       console.log(`Light command sent to ${thingName}`);
     }
+    callback(err);
   });
 }
-
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
