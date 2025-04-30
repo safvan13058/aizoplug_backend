@@ -748,6 +748,7 @@ client.on("message", async (topic, message) => {
         SET balance = balance - $1
         WHERE user_id = $2 AND is_default = TRUE AND status = 'active'
       `, [cost, userId]);
+      console.log("deduct from customer",cost)
 
        await db.query(`
       INSERT INTO transactions (
