@@ -10,7 +10,7 @@ const {turnonswitch}=require('./eventcharger')
 const toggleswitch=async (req, res) => {
     const { thingName, switchNumber, state } = req.body;
   
-    if (!thingName || !switchNumber || !['ON', 'OFF'].includes(state)) {
+    if (!thingName || !switchNumber || !['on', 'off'].includes(state)) {
       return res.status(400).json({ error: 'Invalid payload. Provide thingName, switchNumber, and state (ON/OFF).' });
     }
   
@@ -19,10 +19,9 @@ const toggleswitch=async (req, res) => {
     const payload = {
         state: {
             desired: {
-                update_status: "0",
                 command: "power",
-                c: switchNumber.toString(),
-                s: turnOn ? "1" : "0",  // State: "1" for ON, "0" for OFF
+                c: "1",
+                s:state,  
                 u: "safvan13473@gmail.com"
               }
         
