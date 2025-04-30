@@ -689,7 +689,6 @@ client.on("message", async (topic, message) => {
       const session = sessionResult.rows[0];
       const { id: sessionId, user_id: userId, energy_used: previousWh, start_time, plug_switches_id,voltage, ampere, power } = session;
       
-      const deltaWh = currentWh - (previousWh || 0);
       // const voltage, ampere, power are assumed available from outer context
       
       // 1. Get dynamic pricing from plug_switches
