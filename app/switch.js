@@ -23,10 +23,10 @@ const toggleswitch = async (req, res) => {
     }
   
     try {
-      await db.query('BEGIN');
+      await pool.query('BEGIN');
   
       // 1. Get default wallet
-      const walletRes = await db.query(`
+      const walletRes = await pool.query(`
         SELECT id, balance FROM wallets
         WHERE user_id = $1 AND is_default = TRUE AND status = 'active'
         LIMIT 1
@@ -41,7 +41,7 @@ const toggleswitch = async (req, res) => {
       }
   
       // 2. Get connector
-      const connectorResult = await db.query(
+      const connectorResult = await pool.query(
         'SELECT id FROM plug_switches WHERE device_id = $1',
         [deviceid]
       );
@@ -49,7 +49,7 @@ const toggleswitch = async (req, res) => {
   
       const connector_id = connectorResult.rows[0].id;
   
-      const connectorRes = await db.query(`
+      const connectorRes = await pool.query(`
         SELECT device_id, status FROM plug_switches
         WHERE id = $1
       `, [connector_id]);
@@ -58,7 +58,7 @@ const toggleswitch = async (req, res) => {
       const { status: connectorStatus } = connectorRes.rows[0];
   
       // 3. Create the session
-      const sessionRes = await db.query(`
+      const sessionRes = await pool.query(`
         INSERT INTO charging_sessions (
           user_id, plug_switches_id,
           payment_method, status,
@@ -90,15 +90,15 @@ const toggleswitch = async (req, res) => {
   
       turnonswitch(thingName, payload, async (err) => {
         if (err) {
-          await db.query('ROLLBACK');
+          await pool.query('ROLLBACK');
           return res.status(500).json({ error: 'Failed to publish to AWS IoT' });
         }
   
-        await db.query('COMMIT');
+        await pool.query('COMMIT');
         res.json({ message: `Switch ${switchNumber} of ${thingName} turned ${state}`, session: sessionRes.rows[0] });
       });
     } catch (err) {
-      await db.query('ROLLBACK');
+      await pool.query('ROLLBACK');
       console.error(err);
       res.status(500).json({ error: err.message });
     }
