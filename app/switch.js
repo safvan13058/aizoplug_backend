@@ -42,8 +42,9 @@ const toggleswitch = async (req, res) => {
        }
  
        await pool.query('COMMIT');
-       res.json({ message: `Switch ${switchNumber} of ${thingName} turned ${state}`, session: sessionRes.rows[0] });
+       return res.json({ message: `Switch ${switchNumber} of ${thingName} turned ${state}`, session: sessionRes.rows[0] });
      });
+     return;  
    }
  
   
