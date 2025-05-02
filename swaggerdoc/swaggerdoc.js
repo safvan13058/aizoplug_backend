@@ -93,6 +93,16 @@ const Swaggerdoc = {
             "example": 5
           },
           "description": "Radius in kilometers to search for charging stations"
+        },
+        {
+          "name": "search",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "example": 'aizo'
+          },
+          "description": "Radius in kilometers to search for charging stations"
         }
       ],
       "responses": {
@@ -2456,6 +2466,98 @@ const Swaggerdoc = {
           },
           "500": {
             "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/app/api/set/selected/vehicles/{vehicle_id}": {
+      "post": {
+        "tags": ["Vehicles"],
+        "summary": "Set selected vehicle for a user",
+        "description": "Sets the selected vehicle for the authenticated user. Only one vehicle per user can be marked as currently selected.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "vehicle_id",
+            "in": "path",
+            "description": "ID of the vehicle to be set as selected",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vehicle selected successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Vehicle selected successfully"
+                    },
+                    "vehicle": {
+                      "$ref": "#/components/schemas/Vehicle"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "user_id and vehicle_id are required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Vehicle not found or does not belong to the user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Vehicle not found or does not belong to the user"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Server error"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }

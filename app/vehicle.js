@@ -141,5 +141,51 @@ const update_vehi=async (req, res) => {
     }
   }
 
+  const toggleselect= async (req, res) => {
+    const {  vehicle_id } = req.params;
+    const user_id =req.user.id
+  
+    if (!user_id || !vehicle_id) {
+      return res.status(400).json({ error: 'user_id and vehicle_id are required' });
+    }
+  
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+  
+      // Deselect all vehicles for the user
+      await client.query(
+        `UPDATE vehicles
+         SET currently_selected = FALSE
+         WHERE user_id = $1`,
+        [user_id]
+      );
+  
+      // Set selected vehicle
+      const updateResult = await client.query(
+        `UPDATE vehicles
+         SET currently_selected = TRUE
+         WHERE id = $1 AND user_id = $2
+         RETURNING *`,
+        [vehicle_id, user_id]
+      );
+  
+      if (updateResult.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: 'Vehicle not found or does not belong to the user' });
+      }
+  
+      await client.query('COMMIT');
+      res.json({ message: 'Vehicle selected successfully', vehicle: updateResult.rows[0] });
+  
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('Toggle vehicle selection error:', error);
+      res.status(500).json({ error: 'Server error' });
+    } finally {
+      client.release();
+    }
+  }
+  
 
-module.exports = { create_vehi,update_vehi,getvehiclebyuser,toggle_auto,delete_vehi};
+module.exports = { create_vehi,update_vehi,getvehiclebyuser,toggle_auto,delete_vehi,toggleselect};

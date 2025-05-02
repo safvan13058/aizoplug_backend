@@ -268,6 +268,7 @@ const {
   toggle_auto,
   getvehiclebyuser,
   delete_vehi,
+  toggleselect,
 } = require('./vehicle');
 app.get('/working', (req, res) => {
   res.send('app Server is working!');
@@ -293,6 +294,11 @@ app.delete('/api/delete/vehicles/:id',
 app.patch('/api/vehicles/:id/toggle-auto',
     validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
     , toggle_auto);
+app.post('/api/set/selected/vehicles/:vehicle_id',
+      validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
+      ,toggleselect);
+  
+
 //--------------------------------end vehicle--------------------------
 //-------------------------------for charging session--------------------
 const charging=require('./charging')
