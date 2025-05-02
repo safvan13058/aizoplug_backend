@@ -648,7 +648,7 @@ client.on("message", async (topic, message) => {
     const desired = payload.state?.desired;
     if (!desired) return;
 
-    const { command, c, s, id,userId} = desired;
+    const { command, c, s, id } = desired;
 
     if (command !== "power") return;
 
@@ -656,38 +656,8 @@ client.on("message", async (topic, message) => {
     const switchState = s; // '0' = OFF, '1' = ON
 
     console.log(`📥 Received shadow update for ${deviceid}, state: ${switchState}`);
-    if(switchState==='1'){
-      const connectorResult = await db.query(
-              'SELECT id FROM plug_switches WHERE device_id = $1',
-              [deviceid]
-            );
-            if (connectorResult.rows.length === 0) throw new Error('Connector not found.');
-        
-            const connector_id = connectorResult.rows[0].id;
-        
-            const connectorRes = await db.query(`
-              SELECT device_id, status FROM plug_switches
-              WHERE id = $1
-            `, [connector_id]);
-        
-            if (connectorRes.rows.length === 0) throw new Error('Connector not found.');
-            const { status: connectorStatus } = connectorRes.rows[0];
-        
-            // 3. Create the session
-            const sessionRes = await db.query(`
-              INSERT INTO charging_sessions (
-                user_id, plug_switches_id,
-                payment_method, status
-              )
-              VALUES ($1, $2, 'wallet', 'ongoing')
-              RETURNING *
-            `, [
-              userId,
-              connector_id
-            ]);
-    }
-    // Only act if switch is OFF
 
+    // Only act if switch is OFF
     if (switchState === "0") {
       // 1. Check if connector exists
       const connectorCheck = await db.query(
