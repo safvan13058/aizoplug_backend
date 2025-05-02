@@ -149,7 +149,7 @@ const update_vehi=async (req, res) => {
       return res.status(400).json({ error: 'user_id and vehicle_id are required' });
     }
   
-    const client = await db.connect();
+    const client = await pool.connect();
     try {
       await client.query('BEGIN');
   
