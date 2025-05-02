@@ -155,10 +155,17 @@ app.get('/api/chargers/location', async (req, res) => {
       // If searching, only apply search filter
       if (search) {
         const term = search.toLowerCase();
+      
+        const name = row.name?.toLowerCase() || '';
+        const amenities = row.amenities?.toLowerCase() || '';
+        const contact = typeof row.contact_info === 'string'
+          ? row.contact_info.toLowerCase()
+          : JSON.stringify(row.contact_info || '').toLowerCase();
+      
         if (
-          !row.name?.toLowerCase().includes(term) &&
-          !row.amenities?.toLowerCase().includes(term) &&
-          !row.contact_info?.toLowerCase().includes(term)
+          !name.includes(term) &&
+          !amenities.includes(term) &&
+          !contact.includes(term)
         ) {
           continue;
         }
@@ -167,6 +174,7 @@ app.get('/api/chargers/location', async (req, res) => {
         const distance = haversine(parseFloat(lat), parseFloat(long), row.latitude, row.longitude);
         if (distance > parseFloat(radius) * 1000) continue;
       }
+      
 
       const distanceInKm = lat && long ? parseFloat((haversine(parseFloat(lat), parseFloat(long), row.latitude, row.longitude) / 1000).toFixed(2)) : null;
 
