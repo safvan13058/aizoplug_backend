@@ -87,22 +87,22 @@ const toggleswitch = async (req, res) => {
       const { status: connectorStatus } = connectorRes.rows[0];
   
       // 3. Create the session
-      const sessionRes = await pool.query(`
-        INSERT INTO charging_sessions (
-          user_id, plug_switches_id,
-          payment_method, status,
-          promotion_id, sponsored_by, sponsorship_note
-        )
-        VALUES ($1, $2, $3, 'ongoing', $4, $5, $6)
-        RETURNING *
-      `, [
-        user_id,
-        connector_id,
-        payment_method,
-        promotion_id,
-        sponsored_by,
-        sponsorship_note
-      ]);
+      // const sessionRes = await pool.query(`
+      //   INSERT INTO charging_sessions (
+      //     user_id, plug_switches_id,
+      //     payment_method, status,
+      //     promotion_id, sponsored_by, sponsorship_note
+      //   )
+      //   VALUES ($1, $2, $3, 'ongoing', $4, $5, $6)
+      //   RETURNING *
+      // `, [
+      //   user_id,
+      //   connector_id,
+      //   payment_method,
+      //   promotion_id,
+      //   sponsored_by,
+      //   sponsorship_note
+      // ]);
   
       // 4. Publish MQTT message to turn on the switch
       const payload = {
@@ -112,7 +112,8 @@ const toggleswitch = async (req, res) => {
             c: switchNumber,
             s: state.toLowerCase(),
             u: username,
-            v: voltage.toString()
+            v: voltage.toString(),
+            userId:req.user.id
           }
         }
       };
