@@ -67,7 +67,6 @@ const Swaggerdoc = {
         {
           "name": "lat",
           "in": "query",
-          "required": true,
           "schema": {
             "type": "number",
             "example": 12.9716
@@ -77,7 +76,7 @@ const Swaggerdoc = {
         {
           "name": "long",
           "in": "query",
-          "required": true,
+        
           "schema": {
             "type": "number",
             "example": 77.5946
@@ -87,7 +86,7 @@ const Swaggerdoc = {
         {
           "name": "radius",
           "in": "query",
-          "required": true,
+       
           "schema": {
             "type": "number",
             "example": 5
@@ -97,7 +96,6 @@ const Swaggerdoc = {
         {
           "name": "search",
           "in": "query",
-          "required": true,
           "schema": {
             "type": "string",
             "example": 'aizo'
