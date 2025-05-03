@@ -2655,6 +2655,110 @@ const Swaggerdoc = {
         }
       }
     },
+    "/app/api/toggle/switch": {
+      "post": {
+        "summary": "Toggle power state of a smart switch",
+        "tags": ["Switch Control"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "deviceid": {
+                    "type": "string",
+                    "example": "Thing123_1",
+                    "description": "Format must be <thingName>_<switchNumber>"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": ["on", "off"]
+                  },
+                  "voltage": {
+                    "type": "number",
+                    "default": 100
+                  },
+                  "payment_method": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "promotion_id": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "sponsored_by": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "sponsorship_note": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "required": ["deviceid", "state"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Switch toggled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "session": {
+                      "type": "object",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
 };
 
 module.exports = Swaggerdoc;
