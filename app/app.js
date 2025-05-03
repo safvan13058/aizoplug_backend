@@ -124,27 +124,28 @@ app.get('/api/chargers/location', async (req, res) => {
     }
 
     const query = `
-      SELECT 
-        cs.id AS station_id,
-        cs.name,
-        cs.latitude,
-        cs.longitude,
-        cs.amenities,
-        cs.contact_info,
-        cs.dynamic_pricing,
-        cs.created_at AS station_created_at,
-        cs.updated_at,
-        c.id AS connector_id,
-        c.type,
-        c.power_output,
-        c.state,
-        c.status,
-        c.ocpp_id,
-        c.last_updated,
-        c.created_at AS connector_created_at
-      FROM charging_stations cs
-      LEFT JOIN connectors c ON cs.id = c.station_id
-    `;
+  SELECT 
+    cs.id AS station_id,
+    cs.name,
+    cs.latitude,
+    cs.longitude,
+    cs.amenities,
+    cs.contact_info,
+    cs.dynamic_pricing,
+    cs.created_at AS station_created_at,
+    cs.updated_at,
+    c.id AS connector_id,
+    c.type,
+    c.power_output,
+    c.state,
+    c.status,
+    c.ocpp_id,
+    c.last_updated,
+    c.created_at AS connector_created_at
+  FROM charging_stations cs
+  LEFT JOIN connectors c ON cs.id = c.station_id
+  WHERE cs.enable = true
+`;
 
     const result = await db.query(query);
     const stationsMap = {};
@@ -325,7 +326,7 @@ app.post('/api/topup/wallet/:walletId',
         , topup);
 
 // --------------------------------------------------------------------
-const {addstations} = require('../dashboard/stations');
+const {addstations, adduserstations} = require('../dashboard/stations');
 
  app.post(
    '/api/add/station',
@@ -333,6 +334,7 @@ const {addstations} = require('../dashboard/stations');
    authorizeRoles('admin','staff','dealer','host', 'customer'),
    addstations
  );
+
 // ----------------------------------charging sessions------------------
 const {getchargingsession,sessionBilling} = require('./chargingsession');
 

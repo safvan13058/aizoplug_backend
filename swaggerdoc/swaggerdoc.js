@@ -2560,6 +2560,101 @@ const Swaggerdoc = {
         }
       }
     },
+    "/dashboard/api/user/add/station": {
+      "post": {
+        "summary": "Add a new charging station",
+        "tags": ["Charging Stations"],
+        "security": [
+          { "bearerAuth": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "latitude": { "type": "number" },
+                  "longitude": { "type": "number" },
+                  "amenities": { "type": "string" },
+                  "contact_info": { "type": "string" },
+                  "dynamic_pricing": { "type": "boolean" }
+                },
+                "required": ["name", "latitude", "longitude", "contact_info"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Charging station created successfully with user as partner",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "station": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - user_id missing"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/dashboard/api/enable/toggle/{station_id}": {
+      "patch": {
+        "summary": "Toggle enable/disable status of a station",
+        "tags": ["Charging Stations"],
+        "security": [
+          { "bearerAuth": [] }
+        ],
+        "parameters": [
+          {
+            "name": "station_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the charging station"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Station status toggled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "station": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Station ID missing"
+          },
+          "404": {
+            "description": "Station not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
 };
 
 module.exports = Swaggerdoc;

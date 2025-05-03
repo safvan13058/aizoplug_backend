@@ -32,7 +32,7 @@ dashboard.post('/insert/charger', async (req, res) => {
     }
 });
 // --------------------------------station users----------------------------
-const {addstations,editStation,listStations,deleteStation,listuserstation} = require('./stations');
+const {addstations,toggleStationEnable,adduserstations,editStation,listStations,deleteStation,listuserstation} = require('./stations');
 
 dashboard.post(
    '/api/add/station',
@@ -63,6 +63,18 @@ dashboard.get(
   validateJwt,
   authorizeRoles('admin','staff','dealer','host', 'customer'),
   listuserstation
+);
+dashboard.post(
+  '/api/user/add/station',
+  validateJwt,
+  authorizeRoles('admin','staff','dealer','host', 'customer'),
+  adduserstations
+);
+dashboard.patch(
+  '/api/enable/toggle/:station_id',
+  validateJwt,
+  authorizeRoles('admin','staff','dealer','host', 'customer'),
+  toggleStationEnable
 );
 // -----------------------------------------
 const {

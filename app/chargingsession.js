@@ -321,18 +321,25 @@ const sessionBilling = async (req, res) => {
         u.name AS user_name,
         v.vehicle_number,
         c.ocpp_id,
+        c.type AS connector_type,
         ps.device_id AS switch_id,
         t.id AS transaction_id,
         t.amount AS transaction_amount,
         t.type AS transaction_type,
-        t.status AS transaction_status
+        t.status AS transaction_status,
+        csn.id AS station_id,
+        csn.name AS station_name,
+        csn.latitude,
+        csn.longitude,
+        csn.amenities,
+        csn.contact_info
       FROM charging_sessions cs
       LEFT JOIN users u ON cs.user_id = u.id
       LEFT JOIN vehicles v ON cs.vehicle_id = v.id
       LEFT JOIN connectors c ON cs.connector_id = c.id
       LEFT JOIN plug_switches ps ON cs.plug_switches_id = ps.id
       LEFT JOIN transactions t ON t.session_id = cs.id
-      LEFT JOIN transactions t1 ON t1.user_id = u.id AND t1.transaction_type = 'charge'
+      LEFT JOIN charging_stations csn ON cs.station_id = csn.id
       WHERE cs.id = $1
       `,
       [sessionId]
@@ -343,24 +350,22 @@ const sessionBilling = async (req, res) => {
     }
 
     const row = rows[0];
-
     const connector = [];
 
     if (row.ocpp_id) {
       connector.push({
         id: row.connector_id,
-        ocppid:row.ocpp_id,
-        type: row.connector_type
+        ocppid: row.ocpp_id,
+        type: row.connector_type,
       });
     }
 
     if (row.switch_id) {
       connector.push({
-        deviceid: row.switch_id
+        deviceid: row.switch_id,
       });
     }
 
-    // Build response excluding raw connector/plug_switch columns
     const response = {
       session_id: row.id,
       user_name: row.user_name,
@@ -374,13 +379,21 @@ const sessionBilling = async (req, res) => {
       cost: row.cost,
       payment_method: row.payment_method,
       status: row.status,
+      connector: connector,
+      station: {
+        id: row.station_id,
+        name: row.station_name,
+        latitude: row.latitude,
+        longitude: row.longitude,
+        amenities: row.amenities,
+        contact_info: row.contact_info,
+      },
       transaction: {
         id: row.transaction_id,
         amount: row.transaction_amount,
         type: row.transaction_type,
-        status: row.transaction_status
+        status: row.transaction_status,
       },
-      connector // combined array from connector or switch
     };
 
     res.status(200).json(response);
@@ -390,7 +403,8 @@ const sessionBilling = async (req, res) => {
   }
 };
 
-module.exports = sessionBilling;
+
+
 
 
 module.exports={getchargingsession,sessionBilling}

@@ -64,6 +64,91 @@ const addstations = async (req, res) => {
       client.release();
     }
   };
+  
+const adduserstations = async (req, res) => {
+    const client = await pool.connect();
+    const {
+    // creator & partner
+      name,
+      latitude,
+      longitude,
+      amenities,
+      contact_info,
+      dynamic_pricing
+    } = req.body;
+    const user_id =req.user.id;
+    try {
+      if (!user_id) {
+        return res.status(400).json({ error: 'user_id is required' });
+      }
+  
+      await client.query('BEGIN');
+  
+      // Insert station
+      const stationResult = await client.query(
+        `INSERT INTO charging_stations 
+         (name, latitude, longitude, amenities, contact_info, dynamic_pricing)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING *`,
+        [name, latitude, longitude, amenities, contact_info, dynamic_pricing]
+      );
+  
+      const station = stationResult.rows[0];
+  
+      // Insert the creator as the only partner
+      await client.query(
+        `INSERT INTO user_station_partners 
+         (user_id, station_id, share_percentage, role)
+         VALUES ($1, $2, $3, $4)`,
+        [user_id, station.id, 100.0, 'owner']
+      );
+  
+      await client.query('COMMIT');
+  
+      res.status(201).json({
+        message: 'Charging station created successfully with user as partner',
+        station
+      });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('Error creating station:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+      client.release();
+    }
+  };
+const toggleStationEnable = async (req, res) => {
+    const stationId = req.params.station_id;
+  
+    if (!stationId) {
+      return res.status(400).json({ error: 'Station ID is required' });
+    }
+  
+    try {
+      const result = await pool.query(
+        `UPDATE charging_stations
+         SET enable = NOT enable, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $1
+         RETURNING id, name, enable`,
+        [stationId]
+      );
+  
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Station not found' });
+      }
+  
+      const station = result.rows[0];
+  
+      res.status(200).json({
+        message: `Station "${station.name}" is now ${station.enable ? 'enabled' : 'disabled'}`,
+        station
+      });
+    } catch (error) {
+      console.error(`Error toggling enable status for station ${stationId}:`, error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
+  
 
 const editStation = async (req, res) => {
     const { id } = req.params;
@@ -115,7 +200,7 @@ const editStation = async (req, res) => {
     }
   };
   
-  
+
 
 const listStations = async (req, res) => {
     try {
@@ -306,4 +391,4 @@ const displayChargerAndStation = async (req, res) => {
 
 
 
-module.exports = {addstations,editStation,listStations,deleteStation,listuserstation,stationconnectors, displayChargerAndStation};
+module.exports = {addstations,editStation,listStations,deleteStation,listuserstation,stationconnectors, displayChargerAndStation, adduserstations,toggleStationEnable};
