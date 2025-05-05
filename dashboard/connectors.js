@@ -34,7 +34,7 @@ const addConnector = async (req, res) => {
     }
   };
 
-  const deleteConnector = async (req, res) => {
+const deleteConnector = async (req, res) => {
     const { id } = req.params;
   
     try {
@@ -49,6 +49,46 @@ const addConnector = async (req, res) => {
       console.error('Error deleting connector:', err);
       res.status(500).json({ error: 'Internal Server Error' });
     }
-  };
+  }
 
-module.exports = { addConnector, deleteConnector};
+const deleteswitch=  async (req, res) => {
+      const { deviceId } = req.params;
+  
+      try {
+        // Step 1: Find the thingId for this device
+        const thingResult = await pool.query(
+          'SELECT thingId FROM devices WHERE deviceId = $1',
+          [deviceId]
+        );
+  
+        if (thingResult.rowCount === 0) {
+          return res.status(404).json({ error: 'Device not found' });
+        }
+  
+        const thingId = thingResult.rows[0].thingid;
+  
+        // Step 2: Delete all plug_switches for devices under this thingId
+        const deleteResult = await pool.query(
+          `DELETE FROM plug_switches
+           WHERE device_id IN (
+             SELECT deviceId FROM devices WHERE thingId = $1
+           )
+           RETURNING *`,
+          [thingId]
+        );
+  
+        if (deleteResult.rowCount === 0) {
+          return res.status(404).json({ message: 'No plug switches found for devices of this thing' });
+        }
+  
+        res.json({
+          message: 'Plug switches for all devices under the thing deleted successfully',
+          deleted: deleteResult.rows
+        });
+  
+      } catch (err) {
+        console.error('Error deleting plug switches:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    }  
+module.exports = { addConnector, deleteConnector,deleteswitch};

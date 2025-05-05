@@ -2759,6 +2759,166 @@ const Swaggerdoc = {
         }
       }
     },
+    "/dashboard/api/connectors/{id}": {
+      "delete": {
+        "summary": "Delete a connector by ID",
+        "tags": ["Access Share"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the connector to delete",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Connector deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Connector deleted successfully"
+                    },
+                    "connector": {
+                      "type": "object",
+                      "description": "Details of the deleted connector"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Connector not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Connector not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Internal Server Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard/api/switch/remove/{deviceId}": {
+      "delete": {
+        "summary": "Delete all plug switches linked to a device's thingId",
+        "description": "Deletes all plug_switches associated with any device under the same thing as the provided deviceId. Devices themselves are not deleted.",
+        "tags": ["Access Share"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "description": "The deviceId used to find related devices via thingId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plug switches successfully deleted for all devices under the same thing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Plug switches for all devices under the thing deleted successfully"
+                    },
+                    "deleted": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "description": "Details of each deleted plug switch"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Device or plug switches not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Device not found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "No plug switches found for devices of this thing"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Internal Server Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
 };
 
 module.exports = Swaggerdoc;
