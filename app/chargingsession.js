@@ -334,12 +334,13 @@ const sessionBilling = async (req, res) => {
         csn.amenities,
         csn.contact_info
       FROM charging_sessions cs
-      LEFT JOIN users u ON cs.user_id = u.id
-      LEFT JOIN vehicles v ON cs.vehicle_id = v.id
-      LEFT JOIN connectors c ON cs.connector_id = c.id
-      LEFT JOIN plug_switches ps ON cs.plug_switches_id = ps.id
-      LEFT JOIN transactions t ON t.session_id = cs.id
-      LEFT JOIN charging_stations csn ON cs.station_id = csn.id
+LEFT JOIN users u ON cs.user_id = u.id
+LEFT JOIN vehicles v ON cs.vehicle_id = v.id
+LEFT JOIN connectors c ON cs.connector_id = c.id
+LEFT JOIN plug_switches ps ON cs.plug_switches_id = ps.id
+LEFT JOIN transactions t ON t.session_id = cs.id
+LEFT JOIN charging_stations csn ON c.station_id = csn.id
+
       WHERE cs.id = $1
       `,
       [sessionId]

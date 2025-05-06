@@ -128,7 +128,7 @@ dashboard.post('/api/stations/:station_id/connectors',
     validateJwt,
     authorizeRoles('admin', 'staff', 'dealer'),
     deleteConnector
-  );
+  ); 
   dashboard.delete('/api/switch/remove/:deviceId',
     validateJwt,
     authorizeRoles('admin', 'staff', 'dealer'),
