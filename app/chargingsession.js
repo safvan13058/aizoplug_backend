@@ -141,15 +141,15 @@ const getchargingsession = async (req, res) => {
         state: row.connector_state,
         status: row.connector_status,
         ocpp_id: row.ocpp_id,
-        station: row.switch_station_id ? {
-          id: row.switch_station_id,
-          name: row.switch_station_name,
-          latitude: row.switch_station_latitude,
-          longitude: row.switch_station_longitude,
-          amenities: row.switch_station_amenities,
-          contact_info: row.switch_station_contact_info,
-          dynamic_pricing: row.switch_station_dynamic_pricing
-        } : null,
+        station: row.connector_station_id ? {
+          id: row.connector_station_id,
+          name: row.connector_station_name,
+          latitude: row.connector_station_latitude,
+          longitude: row.connector_station_longitude,
+          amenities: row.connector_station_amenities,
+          contact_info: row.connector_station_contact_info,
+          dynamic_pricing: row.connector_station_dynamic_pricing
+        } : null
       } : null,
 
       plug_switch: row.switch_id ? {
@@ -168,7 +168,7 @@ const getchargingsession = async (req, res) => {
           amenities: row.switch_station_amenities,
           contact_info: row.switch_station_contact_info,
           dynamic_pricing: row.switch_station_dynamic_pricing
-        } : null,
+        } : null
       } : null
     }));
 
