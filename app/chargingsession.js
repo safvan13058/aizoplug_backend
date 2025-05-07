@@ -102,8 +102,8 @@ const getchargingsession = async (req, res) => {
       start_time: row.start_time,
       end_time: row.end_time,
       duration: row.end_time && row.start_time
-  ? formatDuration(new Date(row.end_time) - new Date(row.start_time))
-  : null,
+        ? formatDuration(new Date(row.end_time) - new Date(row.start_time))
+        : null,
       updated_at: row.updated_at,
       energy_used: row.energy_used,
       power: row.power,
@@ -229,6 +229,9 @@ LEFT JOIN charging_stations csn ON c.station_id = csn.id
       vehicle_number: row.vehicle_number,
       start_time: row.start_time,
       end_time: row.end_time,
+      duration: row.end_time && row.start_time
+        ? formatDuration(new Date(row.end_time) - new Date(row.start_time))
+        : null,
       energy_used: row.energy_used,
       power: row.power,
       ampere: row.ampere,
@@ -264,4 +267,4 @@ LEFT JOIN charging_stations csn ON c.station_id = csn.id
 
 
 
-module.exports={getchargingsession,sessionBilling}
+module.exports = { getchargingsession, sessionBilling }
