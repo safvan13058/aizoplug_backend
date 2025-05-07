@@ -2,6 +2,19 @@ const pool = require('../middelware/db');
 const express = require('express');
 const app = express();
 app.use(express.json()); // for parsing application/json
+function formatDuration(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const parts = [];
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0 || hours > 0) parts.push(`${minutes}m`);
+  parts.push(`${seconds}s`);
+
+  return parts.join(' ');
+}
 
 const getchargingsession = async (req, res) => {
   const userId = req.user.id;
@@ -88,6 +101,9 @@ const getchargingsession = async (req, res) => {
       plug_switches_id: row.plug_switches_id,
       start_time: row.start_time,
       end_time: row.end_time,
+      duration: row.end_time && row.start_time
+  ? formatDuration(new Date(row.end_time) - new Date(row.start_time))
+  : null,
       updated_at: row.updated_at,
       energy_used: row.energy_used,
       power: row.power,
