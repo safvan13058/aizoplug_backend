@@ -1319,83 +1319,92 @@ const Swaggerdoc = {
       }
     }
   },
-  "/dashboard/api/add/station": {
-    "post": {
-      "tags": ["Charging Stations"],
-      "summary": "Add a new charging station with partners",
-      "security": [{ "bearerAuth": [] }],
-      "requestBody": {
-        "required": true,
-        "content": {
-          "application/json": {
-            "schema": {
-              "type": "object",
-              "properties": {
-                "name": { "type": "string" },
-                "latitude": { "type": "number", "format": "float" },
-                "longitude": { "type": "number", "format": "float" },
-                "amenities": { "type": "string" },
-                "contact_info": { "type": "string" },
-                "dynamic_pricing": {
-                  "type": "object",
-                  "properties": {
-                    "base_rate": {
-                      "type": "number",
-                      "format": "float",
-                      "example": 5.00
-                    },
-                    // "time_based": {
-                    //   "type": "array",
-                    //   "items": {
-                    //     "type": "object",
-                    //     "properties": {
-                    //       "start": { "type": "string", "example": "06:00" },
-                    //       "end": { "type": "string", "example": "10:00" },
-                    //       "rate": { "type": "number", "format": "float", "example": 6.00 }
-                    //     }
-                    //   }
-                    // },
-                    // "peak_hours": {
-                    //   "type": "object",
-                    //   "properties": {
-                    //     "enabled": { "type": "boolean", "example": true },
-                    //     "multiplier": { "type": "number", "format": "float", "example": 1.5 }
-                    //   }
-                    // }
+ "/dashboard/api/add/station": {
+  "post": {
+    "tags": ["Charging Stations"],
+    "summary": "Add a new charging station with partners",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "latitude": { "type": "number", "format": "float" },
+              "longitude": { "type": "number", "format": "float" },
+              "amenities": { "type": "string" },
+              "contact_info": {
+                "type": "object",
+                "properties": {
+                  "phone": { "type": "string", "example": "8086945415" },
+                  "email": { "type": "string", "format": "email", "example": "support@example.com" }
+                },
+              },
+              "dynamic_pricing": {
+                "type": "object",
+                "properties": {
+                  "base_rate": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 5.00
                   }
-                }
-                ,
-                "partners": {
-                  "type": "array",
-                  "items": {
+                  // Uncomment the below to allow advanced pricing logic:
+                  /*
+                  "time_based": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "start": { "type": "string", "example": "06:00" },
+                        "end": { "type": "string", "example": "10:00" },
+                        "rate": { "type": "number", "format": "float", "example": 6.00 }
+                      }
+                    }
+                  },
+                  "peak_hours": {
                     "type": "object",
                     "properties": {
-                      "user_id": { "type": "integer" },
-                      "role": { "type": "string" },
-                      "share_percentage": { "type": "number", "format": "float" }
-                    },
-                    "required": ["user_id"]
+                      "enabled": { "type": "boolean", "example": true },
+                      "multiplier": { "type": "number", "format": "float", "example": 1.5 }
+                    }
                   }
+                  */
                 }
               },
-              "required": ["name", "latitude", "longitude", "partners"]
-            }
+              "partners": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "user_id": { "type": "integer" },
+                    "role": { "type": "string", "example": "partner" },
+                    "share_percentage": { "type": "number", "format": "float", "example": 50.0 }
+                  },
+                  "required": ["user_id"]
+                }
+              }
+            },
+            "required": ["name", "latitude", "longitude"]
           }
         }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Station and partners added successfully"
       },
-      "responses": {
-        "201": {
-          "description": "Station and partners added successfully"
-        },
-        "400": {
-          "description": "Invalid input"
-        },
-        "500": {
-          "description": "Internal server error"
-        }
+      "400": {
+        "description": "Invalid input"
+      },
+      "500": {
+        "description": "Internal server error"
       }
     }
-  },
+  }
+},
+
  
 
   "/dashboard/api/list/station": {
