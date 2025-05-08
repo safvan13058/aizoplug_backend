@@ -40,7 +40,7 @@ dashboard.post(
    authorizeRoles('admin','staff','dealer','host', 'customer'),
    addstations
  );
- dashboard.put(
+ dashboard.patch(
   '/api/update/station/:id',
   validateJwt,
   authorizeRoles('admin','staff','dealer','host', 'customer'),
@@ -53,7 +53,7 @@ dashboard.get(
   listStations
 );
 dashboard.delete(
-  '/api/delete/station',
+  '/api/delete/station/:id',
   validateJwt,
   authorizeRoles('admin','staff','dealer','host', 'customer'),
   deleteStation

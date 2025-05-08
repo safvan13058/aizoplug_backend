@@ -5,66 +5,141 @@ app.use(express.json()); // for parsing application/json
 
 
 
-const addstations = async (req, res) => {
-    const client = await pool.connect();
-    const {
-      name,
-      latitude,
-      longitude,
-      amenities,
-      contact_info,
-      dynamic_pricing,
-      partners
-    } = req.body;
+// const addstations = async (req, res) => {
+//     const client = await pool.connect();
+//     const {
+//       name,
+//       latitude,
+//       longitude,
+//       amenities,
+//       contact_info,
+//       dynamic_pricing,
+//       partners
+//     } = req.body;
   
-    try {
-      // Validate partner array
-      if (!Array.isArray(partners) || partners.length === 0) {
-        return res.status(400).json({ error: 'At least one partner is required' });
-      }
+//     try {
+//       // Validate partner array
+//       if (!Array.isArray(partners) || partners.length === 0) {
+//         return res.status(400).json({ error: 'At least one partner is required' });
+//       }
   
-      await client.query('BEGIN');
+//       await client.query('BEGIN');
   
-      // Insert station
-      const stationResult = await client.query(
-        `INSERT INTO charging_stations 
-         (name, latitude, longitude, amenities, contact_info, dynamic_pricing)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-        [name, latitude, longitude, amenities, contact_info, dynamic_pricing]
-      );
-      const station = stationResult.rows[0];
+//       // Insert station
+//       const stationResult = await client.query(
+//         `INSERT INTO charging_stations 
+//          (name, latitude, longitude, amenities, contact_info, dynamic_pricing)
+//          VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+//         [name, latitude, longitude, amenities, contact_info, dynamic_pricing]
+//       );
+//       const station = stationResult.rows[0];
   
-      // Insert partners
+//       // Insert partners
+//       for (const partner of partners) {
+//         const { user_id, role = 'partner', share_percentage = 0.0 } = partner;
+  
+//         if (!user_id) {
+//           throw new Error('Each partner must have a user_id');
+//         }
+  
+//         await client.query(
+//           `INSERT INTO user_station_partners 
+//            (user_id, station_id, share_percentage, role)
+//            VALUES ($1, $2, $3, $4)`,
+//           [user_id, station.id, share_percentage, role]
+//         );
+//       }
+  
+//       await client.query('COMMIT');
+  
+//       res.status(201).json({
+//         message: 'Charging station and partners added successfully',
+//         station
+//       });
+//     } catch (error) {
+//       await client.query('ROLLBACK');
+//       console.error('Error creating station and partners:', error);
+//       res.status(500).json({ error: 'Internal Server Error' });
+//     } finally {
+//       client.release();
+//     }
+//   };
+ 
+
+const addStation = async (req, res) => {
+  const client = await pool.connect();
+  const {
+    name,
+    latitude,
+    longitude,
+    amenities,
+    contact_info,
+    dynamic_pricing,
+    partners = []
+  } = req.body;
+
+  // Assuming req.user is set by authentication middleware
+  const user_id = req.user?.id;
+
+  try {
+    if (!user_id) {
+      return res.status(400).json({ error: 'Authenticated user ID is required' });
+    }
+
+    await client.query('BEGIN');
+
+    // Insert station
+    const stationResult = await client.query(
+      `INSERT INTO charging_stations 
+       (name, latitude, longitude, amenities, contact_info, dynamic_pricing)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [name, latitude, longitude, amenities, contact_info, dynamic_pricing]
+    );
+
+    const station = stationResult.rows[0];
+
+    // Handle partners logic
+    if (Array.isArray(partners) && partners.length > 0) {
       for (const partner of partners) {
-        const { user_id, role = 'partner', share_percentage = 0.0 } = partner;
-  
-        if (!user_id) {
+        const { user_id: partnerId, role = 'partner', share_percentage = 0.0 } = partner;
+
+        if (!partnerId) {
           throw new Error('Each partner must have a user_id');
         }
-  
+
         await client.query(
           `INSERT INTO user_station_partners 
            (user_id, station_id, share_percentage, role)
            VALUES ($1, $2, $3, $4)`,
-          [user_id, station.id, share_percentage, role]
+          [partnerId, station.id, share_percentage, role]
         );
       }
-  
-      await client.query('COMMIT');
-  
-      res.status(201).json({
-        message: 'Charging station and partners added successfully',
-        station
-      });
-    } catch (error) {
-      await client.query('ROLLBACK');
-      console.error('Error creating station and partners:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    } finally {
-      client.release();
+    } else {
+      // Default: insert the authenticated user as full owner
+      await client.query(
+        `INSERT INTO user_station_partners 
+         (user_id, station_id, share_percentage, role)
+         VALUES ($1, $2, $3, $4)`,
+        [user_id, station.id, 100.0, 'owner']
+      );
     }
-  };
-  
+
+    await client.query('COMMIT');
+
+    res.status(201).json({
+      message: 'Charging station and partners added successfully',
+      station
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error adding station:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    client.release();
+  }
+};
+
 const adduserstations = async (req, res) => {
     const client = await pool.connect();
     const {
