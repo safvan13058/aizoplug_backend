@@ -66,7 +66,7 @@ app.use(express.json()); // for parsing application/json
 //   };
  
 
-const addStation = async (req, res) => {
+const addstations = async (req, res) => {
   const client = await pool.connect();
   const {
     name,
