@@ -1424,7 +1424,7 @@ const Swaggerdoc = {
       }
     }
   },
-  "/dashboard/api/delete/station/:id": {
+  "/dashboard/api/delete/station/{id}": {
     "delete": {
       "tags": ["Charging Stations"],
       "summary": "Delete a charging station",
