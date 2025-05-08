@@ -81,25 +81,36 @@ const addstations = async (req, res) => {
   // Assuming req.user is set by authentication middleware
   const user_id = req.user?.id;
 
-  try {
-    if (!user_id) {
-      return res.status(400).json({ error: 'Authenticated user ID is required' });
-    }
+  // Validate user
+  if (!user_id) {
+    return res.status(400).json({ error: 'Authenticated user ID is required' });
+  }
 
+  // Parse dynamic_pricing if it's a string
+  let parsedPricing = dynamic_pricing;
+  if (typeof dynamic_pricing === 'string') {
+    try {
+      parsedPricing = JSON.parse(dynamic_pricing);
+    } catch (err) {
+      return res.status(400).json({ error: 'Invalid JSON format in dynamic_pricing' });
+    }
+  }
+
+  try {
     await client.query('BEGIN');
 
-    // Insert station
+    // Insert the charging station
     const stationResult = await client.query(
       `INSERT INTO charging_stations 
        (name, latitude, longitude, amenities, contact_info, dynamic_pricing)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [name, latitude, longitude, amenities, contact_info, dynamic_pricing]
+      [name, latitude, longitude, amenities, contact_info, parsedPricing]
     );
 
     const station = stationResult.rows[0];
 
-    // Handle partners logic
+    // Insert partners if provided
     if (Array.isArray(partners) && partners.length > 0) {
       for (const partner of partners) {
         const { user_id: partnerId, role = 'partner', share_percentage = 0.0 } = partner;
@@ -116,7 +127,7 @@ const addstations = async (req, res) => {
         );
       }
     } else {
-      // Default: insert the authenticated user as full owner
+      // No partners provided: assign current user as full owner
       await client.query(
         `INSERT INTO user_station_partners 
          (user_id, station_id, share_percentage, role)
@@ -139,6 +150,7 @@ const addstations = async (req, res) => {
     client.release();
   }
 };
+
 
 const adduserstations = async (req, res) => {
     const client = await pool.connect();
