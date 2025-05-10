@@ -364,4 +364,14 @@ displayChargerAndStation)
 const {toggleswitch}=require('./switch')
 app.post('/api/toggle/switch',validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),toggleswitch)
 
+
+// ------------------------user fav-station--------------
+const {toggleFavorite,getAllFavorites}=require('./favourite')
+app.post('/api/toggle/fav/:station_id',
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
+  toggleFavorite)
+  
+app.get('/api/fav/stations',
+    validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
+    getAllFavorites)
 module.exports = app

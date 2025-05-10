@@ -134,4 +134,12 @@ dashboard.post('/api/stations/:station_id/connectors',
     authorizeRoles('admin', 'staff', 'dealer'),
     deleteswitch
   );
+
+  // -----------------------------------------------------------
+const {uploadImage} = require('./stationimage');
+dashboard.post('/api/stations/images/:stationId', 
+  validateJwt,
+  authorizeRoles('admin', 'staff', 'dealer'),
+  uploadImage);
+
 module.exports = dashboard
