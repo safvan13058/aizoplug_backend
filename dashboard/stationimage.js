@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
-const pool = require('./db'); // Adjust as needed
-const s3 = require('./aws'); // Import the AWS S3 setup from aws.js
+const pool = require('../middelware/db'); // Adjust as needed
+const s3 = require('../middelware/aws'); // Import the AWS S3 setup from aws.js
 const multerS3 = require('multer-s3');
 
 
