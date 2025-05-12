@@ -3132,7 +3132,7 @@ const Swaggerdoc = {
       }
     },
 
-     "/dashboard/api/stations/images/{stationId}": {
+     "/dashboard/api/stations/upload/images/{stationId}": {
       "post": {
         "tags": ["Charging Stations"],
         "summary": "Upload images for a charging station",
