@@ -136,10 +136,28 @@ dashboard.post('/api/stations/:station_id/connectors',
   );
 
   // -----------------------------------------------------------
-const {uploadImage} = require('./stationimage');
+const {uploadImage,getAllImages,deleteImage} = require('./stationimage');
 dashboard.post('/api/stations/images/:stationId', 
   validateJwt,
   authorizeRoles('admin', 'staff', 'dealer'),
   uploadImage);
+// Get all images for a station
+dashboard.get('/api/stations/images/:stationId',
+  validateJwt,
+  authorizeRoles('admin', 'staff', 'dealer'),
+  getAllImages
+);
+
+// Delete an image for a station
+dashboard.delete('/api/stations/images/:stationId/:imageId',
+  validateJwt,
+  authorizeRoles('admin', 'staff', 'dealer'),
+  deleteImage
+);
+dashboard.put('/api/stations/images/:stationId/:imageId/primary',
+  validateJwt,
+  authorizeRoles('admin', 'staff', 'dealer'),
+  setPrimaryImage
+);
 
 module.exports = dashboard

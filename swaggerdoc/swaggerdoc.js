@@ -3012,6 +3012,412 @@ const Swaggerdoc = {
         }
       }
     },
+
+    "/app/api/toggle/fav/{station_id}": {
+      "post": {
+        "tags": ["Favorites"],
+        "summary": "Toggle favorite status of a charging station",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "station_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the charging station"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Favorite status toggled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "is_favorite": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/app/api/fav/stations": {
+      "get": {
+        "tags": ["Favorites"],
+        "summary": "Get all favorited charging stations for the logged-in user",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Page number for pagination"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Number of records per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of favorited charging stations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "page": {
+                      "type": "integer"
+                    },
+                    "limit": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "totalPages": {
+                      "type": "integer"
+                    },
+                    "favorites": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "name": { "type": "string" },
+                          "location": { "type": "string" },
+                          "is_favorite": { "type": "boolean" }
+                          // Add more fields depending on your charging_stations schema
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+
+     "/dashboard/api/stations/images/{stationId}": {
+      "post": {
+        "tags": ["Charging Stations"],
+        "summary": "Upload images for a charging station",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "stationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the charging station"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "primary_index": {
+                    "type": "integer",
+                    "description": "Index of the image to be set as primary (e.g., 0 for the first image)"
+                  },
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "The image files to be uploaded"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Images uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Images uploaded successfully"
+                    },
+                    "images": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "url": {
+                            "type": "string",
+                            "description": "URL of the uploaded image"
+                          },
+                          "is_primary": {
+                            "type": "boolean",
+                            "description": "Indicates if the image is primary"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No images uploaded or bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+     "/dashboard/api/stations/images/{stationId}": {
+      "get": {
+        "tags": ["Charging Stations"],
+        "summary": "Get all images for a charging station",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "stationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the charging station"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of images for the charging station",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "images": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "station_id": {
+                            "type": "integer"
+                          },
+                          "image_url": {
+                            "type": "string",
+                            "description": "URL of the image"
+                          },
+                          "is_primary": {
+                            "type": "boolean",
+                            "description": "Indicates if this image is the primary image"
+                          },
+                          "uploaded_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "Timestamp when the image was uploaded"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No images found for the station"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/dashboard/api/stations/images/{stationId}/{imageId}": {
+      "delete": {
+        "tags": ["Charging Stations"],
+        "summary": "Delete an image for a charging station",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "stationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the charging station"
+          },
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the image to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Image deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Image not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/dashboard/api/stations/images/{stationId}/{imageId}/primary": {
+      "put": {
+        "tags": ["Charging Stations"],
+        "summary": "Set an image as primary for a station",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "stationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the charging station"
+          },
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the image to set as primary"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image set as primary successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Image set as primary successfully"
+                    },
+                    "image": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "station_id": {
+                          "type": "integer"
+                        },
+                        "image_url": {
+                          "type": "string"
+                        },
+                        "is_primary": {
+                          "type": "boolean"
+                        },
+                        "uploaded_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Image not found or invalid for this station"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
 };
 
 module.exports = Swaggerdoc;
