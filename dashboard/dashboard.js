@@ -136,7 +136,7 @@ dashboard.post('/api/stations/:station_id/connectors',
   );
 
   // -----------------------------------------------------------
-const {uploadImage,getAllImages,deleteImage} = require('./stationimage');
+const {uploadImage,getAllImages,deleteImage,setPrimaryImage} = require('./stationimage');
 dashboard.post('/api/stations/images/:stationId', 
   validateJwt,
   authorizeRoles('admin', 'staff', 'dealer'),
