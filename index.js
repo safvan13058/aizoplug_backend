@@ -21,6 +21,8 @@ app.use('/dashboard', dashboard)
 const usermanage = require('./app/usermange')
 app.use('/user',usermanage)
 
+const payment = require('./payment/payment.js')
+app.use('/payment',payment)
 
 
 const charging = require('./app/charging')
