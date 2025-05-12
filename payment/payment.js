@@ -2,6 +2,7 @@
 const express = require('express')
 const app = express.Router()
 const db = require('../middelware/db')
+const razorpay = require("./razorpay");
 app.use(express.json()); 
 // Create order route
 app.post("/create-order", async (req, res) => {
