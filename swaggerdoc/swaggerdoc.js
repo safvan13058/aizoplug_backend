@@ -2928,6 +2928,90 @@ const Swaggerdoc = {
         }
       }
     },
+     "/payment/create-order": {
+      "post": {
+        "summary": "Create Razorpay Order",
+        "tags": ["Payment Integration"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "number",
+                    "example": 500
+                  }
+                },
+                "required": ["amount"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "amount": { "type": "number" },
+                    "currency": { "type": "string" },
+                    "receipt": { "type": "string" },
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/payment/verify": {
+      "post": {
+        "summary": "Verify Razorpay Payment Signature",
+        "tags": ["Payment Integration"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "razorpay_order_id": {
+                    "type": "string",
+                    "example": "order_KlG5X2DFvJr82a"
+                  },
+                  "razorpay_payment_id": {
+                    "type": "string",
+                    "example": "pay_KlG6Iv3KzU8xEv"
+                  },
+                  "razorpay_signature": {
+                    "type": "string",
+                    "example": "f58a34a7c2c826089d3d1324e872059cc1702f85c21c23bd42b53fbb7c97c0a0"
+                  }
+                },
+                "required": ["razorpay_order_id", "razorpay_payment_id", "razorpay_signature"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment verified successfully"
+          },
+          "400": {
+            "description": "Invalid signature"
+          }
+        }
+      }
+    },
 };
 
 module.exports = Swaggerdoc;
