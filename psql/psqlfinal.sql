@@ -94,6 +94,7 @@ CREATE TABLE vehicles (
     make VARCHAR(255) NOT NULL,  -- brand name
     model VARCHAR(255) NOT NULL,  -- vechile model
     auto_charging_enabled BOOLEAN DEFAULT FALSE,  -- auto-chrg flag
+    currently_selected BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -106,6 +107,7 @@ CREATE TABLE charging_stations (
     amenities TEXT,  -- ammeneties in JSON/CSV
     contact_info TEXT,  -- contct details          
     dynamic_pricing JSONB,  -- dynmic price model  
+    enable BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -140,8 +142,25 @@ CREATE TABLE plug_switches (
     hub_index VARCHAR(100) NOT NULL,  -- unique identifier for the switch within a station/hub
     type VARCHAR(50),    -- e.g. relay, smart_switch 
     status VARCHAR(50),  -- e.g. on, off, fault 
+    dynamic_pricing JSON,
     last_heartbeat TIMESTAMP,  -- last time the switch pinged
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE user_favorites_station (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    station_id INT NOT NULL REFERENCES charging_stations(id) ON DELETE CASCADE,
+    is_favorite BOOLEAN DEFAULT TRUE,  -- TRUE if currently favorited, FALSE if unfavorited
+    favorited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, station_id)  -- Prevent duplicate favorites for same user-station pair
+);
+CREATE TABLE station_images (
+    id SERIAL PRIMARY KEY,
+    station_id INT NOT NULL REFERENCES charging_stations(id) ON DELETE CASCADE,
+    image_url TEXT NOT NULL,
+    is_primary BOOLEAN DEFAULT FALSE,  -- true if it's the main image
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE promotional_rates (
@@ -179,6 +198,9 @@ CREATE TABLE charging_sessions (
     end_time TIMESTAMP,  -- when finishd
     updated_at TIMESTAMP,
     energy_used DECIMAL(6,2),  -- kWhs used
+    power DECIMAL(6,2),  -- kWhs used
+    ampere DECIMAL(6,2),  -- kWhs used
+    voltage DECIMAL(6,2),  -- kWhs used
     cost DECIMAL(10,2),  -- cost based on dynmic price
     payment_method VARCHAR(50) CHECK (payment_method IN ('wallet', 'RFID', 'QR')),  -- how paid
     status VARCHAR(50) CHECK (status IN ('ongoing', 'completed', 'failed')) DEFAULT 'ongoing',  -- sesion status
