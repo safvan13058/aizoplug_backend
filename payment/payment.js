@@ -48,7 +48,7 @@ app.post("/verify",
       const order = await razorpay.orders.fetch(razorpay_order_id);
       const amountInRupees = order.amount / 100;
 
-      const client = await pool.connect();
+      const client = await db.connect();
       try {
         await client.query("BEGIN");
 
