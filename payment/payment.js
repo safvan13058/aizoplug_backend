@@ -4,12 +4,13 @@ const app = express.Router()
 const db = require('../middelware/db')
 const razorpay = require("./razorpay");
 app.use(express.json()); 
+const crypto = require("crypto");
+
 // Create order route
 require('dotenv').config(); // Load environment variables from .env
 
 app.post("/create-order", async (req, res) => {
   const { amount } = req.body;
-
   try {
     const options = {
       amount: amount * 100, // in paisa
