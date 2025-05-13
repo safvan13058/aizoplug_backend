@@ -30,8 +30,26 @@ app.post("/create-order",
 });
 
 // Verify payment signature
+// app.post("/verify",
+//   validateJwt,
+//   authorizeRoles('admin', 'customer', 'staff', 'dealer'),
+//    (req, res) => {
+//   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+//   const hash = crypto
+//     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+//     .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+//     .digest("hex");
+
+//   if (hash === razorpay_signature) {
+//     res.json({ success: true, message: "Payment verified" });
+//   } else {
+//     res.status(400).json({ success: false, message: "Invalid signature" });
+//   }
+// });
 app.post("/verify",
   validateJwt,
+
   authorizeRoles('admin', 'customer', 'staff', 'dealer'),
   async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
@@ -84,12 +102,15 @@ app.post("/verify",
         await client.query("COMMIT");
 
         if (isValid) {
+          console.log("Payment verified and wallet updated")
           res.json({ success: true, message: "Payment verified and wallet updated" });
         } else {
+           console.log("Invalid signature. Payment verification failed")
           res.status(400).json({ success: false, message: "Invalid signature. Payment verification failed" });
         }
       } catch (err) {
         await client.query("ROLLBACK");
+         console.log("DB transaction error")
         console.error("DB transaction error:", err);
         res.status(500).json({ success: false, message: "Database error" });
       } finally {
