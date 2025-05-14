@@ -162,7 +162,7 @@ dashboard.put('/api/stations/images/:stationId/:imageId/primary',
 
 // --------------------------station count--------------
 const {countstation}=require('./home')
-dashboard.get('dashboard/api/stations/count',
+dashboard.get('/api/stations/count',
   validateJwt,
   authorizeRoles('admin', 'staff', 'dealer'),
   countstation
