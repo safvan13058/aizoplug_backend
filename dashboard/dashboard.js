@@ -160,4 +160,13 @@ dashboard.put('/api/stations/images/:stationId/:imageId/primary',
   setPrimaryImage
 );
 
+// --------------------------station count--------------
+const {countstation}=require('./home')
+dashboard.get('dashboard/api/stations/count',
+  validateJwt,
+  authorizeRoles('admin', 'staff', 'dealer'),
+  countstation
+);
+
+
 module.exports = dashboard
