@@ -79,30 +79,19 @@ const chargerStatus = async (req, res) => {
   }
 };
 
-// api find charger station
-
-const findCharger = async (req, res) => {
+const amountGraph = async (req, res) => {
   const userId = req.user.id
-  if (isNaN(userId)) {
-    return res.res.status(400).json({ error: 'Invalid user ID' });
-  }
 
   try {
-    const location = 'SELECT cs.id AS station_id, cs.name, cs.latitude, cs.longitude, cs.amenities, cs.contact_info FROM charging_stations cs JOIN user_station_partners usp ON cs.id = usp.station_id WHERE usp.user_id = $1';
-    const { rows } = await db.query(location, [userId])
-    const response = rows.map(station => ({
-      ...station,
-      map_url: `https://www.google.com/maps?q=${station.latitude},${station.longitude}`
-    }));
-
-    res.json(response);
+    const host_earning = `
+    SELECT amount, created_at FROM transactions WHERE transaction_type = 'host_earning' AND type = 'credit' AND status = 'completed' ORDER BY created_at DESC; ;
+    `
+    const { rows } = await db.query(host_earning);
+    res.json(rows);
   } catch (err) {
-    console.error('Error fetching chargers:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error fetching host earnings:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-  
-
 }
 
-
-module.exports = { countstation, chargerStatus, findCharger }
+module.exports = { countstation, chargerStatus, amountGraph }
