@@ -80,18 +80,26 @@ const chargerStatus = async (req, res) => {
 };
 
 const amountGraph = async (req, res) => {
-  const userId = req.user.id
+  const userId = req.user.id;
 
   try {
-    const host_earning = await db.query( `
-    SELECT amount, created_at FROM transactions WHERE transaction_type = 'host_earning' AND type = 'credit' AND status = 'completed' ORDER BY created_at DESC;
-    `,[userId]);
-    
-    res.json(host_earning);
+    const host_earning = await db.query(
+      `SELECT amount, created_at
+       FROM transactions
+       WHERE transaction_type = 'host_earning'
+         AND type = 'credit'
+         AND status = 'completed'
+         AND user_id = $1
+       ORDER BY created_at DESC;`,
+      [userId]
+    );
+
+    res.json(host_earning.rows || host_earning); // `rows` if using pg
   } catch (err) {
     console.error('Error fetching host earnings:', err);
     res.status(500).json({ error: 'Internal Server Error' });
-  }
-}
+  } 
+};
+
 
 module.exports = { countstation, chargerStatus, amountGraph }
