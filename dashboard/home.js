@@ -1,5 +1,5 @@
 const express = require('express')
-const home = express.Router() 
+const home = express.Router()
 const db = require('../middelware/db')
 home.use(express.json())
 const { validateJwt, authorizeRoles } = require('../middelware/auth');
@@ -7,8 +7,8 @@ const { validateJwt, authorizeRoles } = require('../middelware/auth');
 
 
 // API route to get station count for a user
-const countstation= async (req, res) => {
-  const userId =req.user.id
+const countstation = async (req, res) => {
+  const userId = req.user.id
 
   if (isNaN(userId)) {
     return res.status(400).json({ error: 'Invalid user ID' });
@@ -49,8 +49,8 @@ const chargerStatus = async (req, res) => {
     WHERE usp.user_id = $1
     GROUP BY c.status;
   `;
-  console.log(`state:${stateQuery} ,, status :${statusQuery} `);
-  
+  // console.log(`state:${stateQuery} ,, status :${statusQuery} `);
+
   try {
     const [stateResult, statusResult] = await Promise.all([
       db.query(stateQuery, [userId]),
@@ -79,5 +79,30 @@ const chargerStatus = async (req, res) => {
   }
 };
 
+// api find charger station
 
-module.exports={countstation,chargerStatus}
+const findCharger = async (req, res) => {
+  const userId = req.user.id
+  if (isNaN(userId)) {
+    return res.res.status(400).json({ error: 'Invalid user ID' });
+  }
+
+  try {
+    const location = 'SELECT cs.id AS station_id, cs.name, cs.latitude, cs.longitude, cs.amenities, cs.contact_info FROM charging_stations cs JOIN user_station_partners usp ON cs.id = usp.station_id WHERE usp.user_id = $1';
+    const { rows } = await db.query(location, [userId])
+    const response = rows.map(station => ({
+      ...station,
+      map_url: `https://www.google.com/maps?q=${station.latitude},${station.longitude}`
+    }));
+
+    res.json(response);
+  } catch (err) {
+    console.error('Error fetching chargers:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+  
+
+}
+
+
+module.exports = { countstation, chargerStatus, findCharger }
