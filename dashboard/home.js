@@ -83,11 +83,11 @@ const amountGraph = async (req, res) => {
   const userId = req.user.id
 
   try {
-    const host_earning = `
-    SELECT amount, created_at FROM transactions WHERE transaction_type = 'host_earning' AND type = 'credit' AND status = 'completed' ORDER BY created_at DESC; ;
-    `
-    const { rows } = await db.query(host_earning);
-    res.json(rows);
+    const host_earning = await db.query( `
+    SELECT amount, created_at FROM transactions WHERE transaction_type = 'host_earning' AND type = 'credit' AND status = 'completed' ORDER BY created_at DESC;
+    `,[userId]);
+    
+    res.json(host_earning);
   } catch (err) {
     console.error('Error fetching host earnings:', err);
     res.status(500).json({ error: 'Internal Server Error' });
