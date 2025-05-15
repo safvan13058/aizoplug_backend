@@ -161,12 +161,17 @@ dashboard.put('/api/stations/images/:stationId/:imageId/primary',
 );
 
 // --------------------------station count--------------
-const {countstation}=require('./home')
-dashboard.get('dashboard/api/stations/count',
+const {countstation,chargerStatus}=require('./home')
+dashboard.get('api/stations/count',
   validateJwt,
   authorizeRoles('admin', 'staff', 'dealer'),
   countstation
 );
 
+dashboard.get('api/connector-summary/',
+  validateJwt,
+  authorizeRoles('admin', 'staff', 'dealer'),
+  chargerStatus
+);
 
 module.exports = dashboard
