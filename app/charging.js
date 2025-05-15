@@ -159,7 +159,7 @@ router.post('/stop', validateJwt,
       throw new Error('No ongoing session found for this connector.');
     }
 
-     console.log("chagrging session userid ",user_id)
+    //  console.log("chagrging session userid ",user_id)
     // ✅ Check if the session belongs to the logged-in user
     if (sessionRes.rows[0].user_id !== req.user.id) {
       return res.status(403).json({ message: "You are not authorized to stop this charging session." });
