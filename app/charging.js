@@ -149,7 +149,7 @@ router.post('/stop', validateJwt,
     // 2. Get the latest transaction/session ID if needed
     // Replace this logic with actual active session query if required
     const sessionRes = await db.query(`
-      SELECT id FROM charging_sessions
+      SELECT id,user_id FROM charging_sessions
       WHERE connector_id = $1 AND status = 'ongoing'
       ORDER BY created_at DESC
       LIMIT 1
@@ -161,7 +161,7 @@ router.post('/stop', validateJwt,
 
 
     // ✅ Check if the session belongs to the logged-in user
-    if (session.user_id !== req.user.id) {
+    if (sessionRes.user_id !== req.user.id) {
       return res.status(403).json({ message: "You are not authorized to stop this charging session." });
     }
 
