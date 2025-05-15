@@ -49,11 +49,12 @@ const chargerStatus = async (req, res) => {
     WHERE usp.user_id = $1
     GROUP BY c.status;
   `;
-
+  console.log(`state:${stateQuery} ,, status :${statusQuery} `);
+  
   try {
     const [stateResult, statusResult] = await Promise.all([
-      pool.query(stateQuery, [userId]),
-      pool.query(statusQuery, [userId])
+      db.query(stateQuery, [userId]),
+      db.query(statusQuery, [userId])
     ]);
 
     const stateCounts = {};
