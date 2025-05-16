@@ -125,6 +125,7 @@ app.post("/verify",
   validateJwt,
   authorizeRoles('admin', 'customer', 'staff', 'dealer'),
   async (req, res) => {
+    console.log("payment verify")
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
     const user_id = req.user.id;
 
