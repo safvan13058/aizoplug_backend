@@ -1943,6 +1943,131 @@ const Swaggerdoc = {
       ]
     }
   },
+   "dashboard/api/connectors/{id}": {
+      "put": {
+        "summary": "Update a specific field in a connector",
+        "tags": ["Connectors"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the connector to update",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Field and value to update",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string",
+                    "enum": ["type", "power_output", "state", "status", "ocpp_id"],
+                    "example": "status"
+                  },
+                  "value": {
+                    "type": "string",
+                    "example": "In Use"
+                  }
+                },
+                "required": ["field", "value"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Connector updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Connector updated"
+                    },
+                    "connector": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer", "example": 3 },
+                        "station_id": { "type": "integer", "example": 1 },
+                        "type": { "type": "string", "example": "CCS" },
+                        "power_output": { "type": "number", "format": "float", "example": 50.00 },
+                        "state": { "type": "string", "example": "Active" },
+                        "status": { "type": "string", "example": "In Use" },
+                        "ocpp_id": { "type": "string", "example": "OC123" },
+                        "last_updated": { "type": "string", "format": "date-time", "example": "2024-05-20T10:00:00Z" },
+                        "created_at": { "type": "string", "format": "date-time", "example": "2023-08-01T12:00:00Z" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid field name",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid field name"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Connector not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Connector not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
   "/app/api/device/accessshare/{station_id}": {
       "post": {
         "tags": ["Access Share"],
@@ -2054,6 +2179,7 @@ const Swaggerdoc = {
         }
       }
     },
+
     "/app/api/station/devices/{station_id}": {
       "get": {
         "tags": ["Station Devices"],

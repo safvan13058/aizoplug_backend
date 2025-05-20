@@ -119,7 +119,7 @@ dashboard.get(
 );
 // ---------------------------------------------------------------------------
 // ----------------------connectors-------------------------------------
-const {addConnector, deleteConnector,deleteswitch} = require('./connectors');
+const {addConnector, deleteConnector,deleteswitch,updateconnector} = require('./connectors');
 dashboard.post('/api/stations/:station_id/connectors', 
   validateJwt,
   authorizeRoles('admin', 'staff', 'dealer'),
@@ -133,6 +133,11 @@ dashboard.post('/api/stations/:station_id/connectors',
     validateJwt,
     authorizeRoles('admin', 'staff', 'dealer'),
     deleteswitch
+  );
+  dashboard.put('/api/connectors/:id',
+    validateJwt,
+    authorizeRoles('admin', 'staff', 'dealer'),
+    updateconnector
   );
 
   // -----------------------------------------------------------
