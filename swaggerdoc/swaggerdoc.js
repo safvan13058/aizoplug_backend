@@ -1943,9 +1943,10 @@ const Swaggerdoc = {
       ]
     }
   },
-   "dashboard/api/connectors/{id}": {
+   "/dashboard/api/connectors/{id}": {
       "put": {
-        "summary": "Update a specific field in a connector",
+        "summary": "Update connector fields",
+        "description": "Update one or more fields in a connector. Only non-null fields will be updated.",
         "tags": ["Connectors"],
         "security": [
           {
@@ -1964,24 +1965,35 @@ const Swaggerdoc = {
           }
         ],
         "requestBody": {
-          "description": "Field and value to update",
+          "description": "Any combination of fields to update. Only non-null fields will be applied.",
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "field": {
+                  "type": {
                     "type": "string",
-                    "enum": ["type", "power_output", "state", "status", "ocpp_id"],
-                    "example": "status"
+                    "example": "CCS"
                   },
-                  "value": {
+                  "power_output": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 60.0
+                  },
+                  "state": {
                     "type": "string",
-                    "example": "In Use"
+                    "example": "Active"
+                  },
+                  "status": {
+                    "type": "string",
+                    "example": "Available"
+                  },
+                  "ocpp_id": {
+                    "type": "string",
+                    "example": "OC123"
                   }
-                },
-                "required": ["field", "value"]
+                }
               }
             }
           }
@@ -2004,11 +2016,11 @@ const Swaggerdoc = {
                         "id": { "type": "integer", "example": 3 },
                         "station_id": { "type": "integer", "example": 1 },
                         "type": { "type": "string", "example": "CCS" },
-                        "power_output": { "type": "number", "format": "float", "example": 50.00 },
+                        "power_output": { "type": "number", "example": 60.0 },
                         "state": { "type": "string", "example": "Active" },
-                        "status": { "type": "string", "example": "In Use" },
+                        "status": { "type": "string", "example": "Available" },
                         "ocpp_id": { "type": "string", "example": "OC123" },
-                        "last_updated": { "type": "string", "format": "date-time", "example": "2024-05-20T10:00:00Z" },
+                        "last_updated": { "type": "string", "format": "date-time", "example": "2025-05-20T10:00:00Z" },
                         "created_at": { "type": "string", "format": "date-time", "example": "2023-08-01T12:00:00Z" }
                       }
                     }
@@ -2018,7 +2030,7 @@ const Swaggerdoc = {
             }
           },
           "400": {
-            "description": "Invalid field name",
+            "description": "No valid fields provided",
             "content": {
               "application/json": {
                 "schema": {
@@ -2026,7 +2038,7 @@ const Swaggerdoc = {
                   "properties": {
                     "error": {
                       "type": "string",
-                      "example": "Invalid field name"
+                      "example": "No valid fields provided to update"
                     }
                   }
                 }

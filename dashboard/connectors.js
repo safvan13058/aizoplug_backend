@@ -93,19 +93,37 @@ const deleteswitch=  async (req, res) => {
     }  
 
 // Update connector field
-const updateconnector= async (req, res) => {
+const updateconnector = async (req, res) => {
   const connectorId = req.params.id;
-  const { field, value } = req.body;
-
-  // Validate allowed fields
   const allowedFields = ['type', 'power_output', 'state', 'status', 'ocpp_id', 'last_updated'];
-  if (!allowedFields.includes(field)) {
-    return res.status(400).json({ error: 'Invalid field name' });
+  const updates = [];
+
+  const values = [];
+  let idx = 1;
+
+  for (const field of allowedFields) {
+    if (req.body[field] !== undefined && req.body[field] !== null) {
+      updates.push(`${field} = $${idx}`);
+      values.push(req.body[field]);
+      idx++;
+    }
   }
 
+  // If no valid fields provided
+  if (updates.length === 0) {
+    return res.status(400).json({ error: 'No valid fields provided to update' });
+  }
+
+  // Add last_updated = NOW()
+  updates.push(`last_updated = NOW()`);
+
+  // Add connector ID to the values array
+  values.push(connectorId);
+
+  const query = `UPDATE connectors SET ${updates.join(', ')} WHERE id = $${values.length} RETURNING *`;
+
   try {
-    const query = `UPDATE connectors SET ${field} = $1, last_updated = NOW() WHERE id = $2 RETURNING *`;
-    const result = await pool.query(query, [value, connectorId]);
+    const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Connector not found' });
@@ -117,4 +135,5 @@ const updateconnector= async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 module.exports = { addConnector, deleteConnector,deleteswitch,updateconnector};
