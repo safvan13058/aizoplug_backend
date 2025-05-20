@@ -7,17 +7,17 @@ const { validateJwt, authorizeRoles } = require('../middelware/auth')
 
 
 function haversine(lat1, lon1, lat2, lon2) {
-    const R = 6371000; // Earth's radius in meters
-    const toRad = angle => (angle * Math.PI) / 180;
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
+  const R = 6371000; // Earth's radius in meters
+  const toRad = angle => (angle * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
 
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
 
 // ..................................... find chargers .............................................................
@@ -67,7 +67,7 @@ function haversine(lat1, lon1, lat2, lon2) {
 //           );
 //           const distanceInKm = parseFloat((haversine(parseFloat(lat), parseFloat(long), row.latitude, row.longitude) / 1000).toFixed(2));
 
-          
+
 //               // Skip if distance exceeds radius
 //               if (distance > parseFloat(radius) * 1000) continue;
 
@@ -107,7 +107,7 @@ function haversine(lat1, lon1, lat2, lon2) {
 //       if (filteredStations.length === 0) {
 //         return res.status(200).json({ message: "No charging stations found within the specified radius.", data: [] });
 //     }
-    
+
 //       res.json(filteredStations);
 //   } catch (error) {
 //       console.error(error);
@@ -116,7 +116,8 @@ function haversine(lat1, lon1, lat2, lon2) {
 // });
 app.get('/api/chargers/location', async (req, res) => {
   try {
-    const { lat, long, radius, search } = req.query;
+    const { lat, long, radius, search, type, power_output } = req.query;
+
 
     // If no search, validate required location parameters
     if (!search && (!lat || !long || !radius)) {
@@ -156,13 +157,13 @@ app.get('/api/chargers/location', async (req, res) => {
       // If searching, only apply search filter
       if (search) {
         const term = search.toLowerCase();
-      
+
         const name = row.name?.toLowerCase() || '';
         const amenities = row.amenities?.toLowerCase() || '';
         const contact = typeof row.contact_info === 'string'
           ? row.contact_info.toLowerCase()
           : JSON.stringify(row.contact_info || '').toLowerCase();
-      
+
         if (
           !name.includes(term) &&
           !amenities.includes(term) &&
@@ -175,7 +176,11 @@ app.get('/api/chargers/location', async (req, res) => {
         const distance = haversine(parseFloat(lat), parseFloat(long), row.latitude, row.longitude);
         if (distance > parseFloat(radius) * 1000) continue;
       }
-      
+
+      // New: Filter by connector type and power_output if specified
+      if (type && row.type?.toLowerCase() !== type.toLowerCase()) continue;
+      if (power_output && parseFloat(row.power_output) !== parseFloat(power_output)) continue;
+
 
       const distanceInKm = lat && long ? parseFloat((haversine(parseFloat(lat), parseFloat(long), row.latitude, row.longitude) / 1000).toFixed(2)) : null;
 
@@ -226,42 +231,42 @@ app.get('/api/chargers/location', async (req, res) => {
 });
 
 // ............................ wallet test ..........................................
- app.post('/api/webhooks/payment', express.raw({ type: 'application/json' }), async (req, res) => {
-    const sig = req.headers['stripe-signature']; // or use Razorpay's validation
-    const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  
-    let event;
-    try {
-      event = stripe.webhooks.constructEvent(req.body, sig, secret);
-    } catch (err) {
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-  
-    if (event.type === 'payment_intent.succeeded') {
-      const paymentIntent = event.data.object;
-      const walletId = paymentIntent.metadata.wallet_id;
-      const amount = paymentIntent.amount / 100;
-  
-      // Top-up the wallet securely
-      const walletRes = await pool.query(`SELECT * FROM wallets WHERE id = $1`, [walletId]);
-      if (walletRes.rows.length) {
-        const wallet = walletRes.rows[0];
-  
-        await pool.query(
-          `UPDATE wallets SET balance = balance + $1, last_transaction_at = NOW() WHERE id = $2`,
-          [amount, walletId]
-        );
-  
-        await pool.query(
-          `INSERT INTO wallet_transactions (wallet_id, user_id, transaction_type, amount, balance_after, description)
+app.post('/api/webhooks/payment', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature']; // or use Razorpay's validation
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, secret);
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'payment_intent.succeeded') {
+    const paymentIntent = event.data.object;
+    const walletId = paymentIntent.metadata.wallet_id;
+    const amount = paymentIntent.amount / 100;
+
+    // Top-up the wallet securely
+    const walletRes = await pool.query(`SELECT * FROM wallets WHERE id = $1`, [walletId]);
+    if (walletRes.rows.length) {
+      const wallet = walletRes.rows[0];
+
+      await pool.query(
+        `UPDATE wallets SET balance = balance + $1, last_transaction_at = NOW() WHERE id = $2`,
+        [amount, walletId]
+      );
+
+      await pool.query(
+        `INSERT INTO wallet_transactions (wallet_id, user_id, transaction_type, amount, balance_after, description)
            VALUES ($1, $2, 'top_up', $3, $4, $5)`,
-          [wallet.id, wallet.user_id, amount, wallet.balance + amount, 'Top-up via webhook']
-        );
-      }
+        [wallet.id, wallet.user_id, amount, wallet.balance + amount, 'Top-up via webhook']
+      );
     }
-  
-    res.status(200).json({ received: true });
-  });
+  }
+
+  res.status(200).json({ received: true });
+});
 // -------------------------------vehicle------------------------------
 const {
   create_vehi,
@@ -277,37 +282,37 @@ app.get('/working', (req, res) => {
 
 
 app.post('/api/add/vehicles/',
-    validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
-    , create_vehi);
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
+  , create_vehi);
 
 app.put('/api/update/vehicles/:id',
-    validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
-    , update_vehi);
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
+  , update_vehi);
 
 app.get('/api/display/user/vehicles',
-    validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
-    , getvehiclebyuser);
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
+  , getvehiclebyuser);
 
 app.delete('/api/delete/vehicles/:id',
-    validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
-    , delete_vehi);
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
+  , delete_vehi);
 
 app.patch('/api/vehicles/:id/toggle-auto',
-    validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
-    , toggle_auto);
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
+  , toggle_auto);
 app.post('/api/set/selected/vehicles/:vehicle_id',
-      validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
-      ,toggleselect);
-  
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
+  , toggleselect);
+
 
 //--------------------------------end vehicle--------------------------
 //-------------------------------for charging session--------------------
-const charging=require('./charging')
-app.use('/charging',charging)
+const charging = require('./charging')
+app.use('/charging', charging)
 
 // -----------------------end charging session-------------------------
 const {
-  topup, userwallethistory, getuserwallet,create_wallet
+  topup, userwallethistory, getuserwallet, create_wallet
 } = require('./wallet');
 
 app.post('/api/add/wallet/',
@@ -315,63 +320,63 @@ app.post('/api/add/wallet/',
   , create_wallet);
 
 app.get('/api/display/wallet/',
-    validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
-    , getuserwallet);
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
+  , getuserwallet);
 app.get('/api/display/wallet/history',
-      validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
-      , userwallethistory);
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
+  , userwallethistory);
 
 app.post('/api/topup/wallet/:walletId',
-        validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
-        , topup);
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer')
+  , topup);
 
 // --------------------------------------------------------------------
-const {addstations, adduserstations} = require('../dashboard/stations');
+const { addstations, adduserstations } = require('../dashboard/stations');
 
- app.post(
-   '/api/add/station',
-   validateJwt,
-   authorizeRoles('admin','staff','dealer','host', 'customer'),
-   addstations
- );
+app.post(
+  '/api/add/station',
+  validateJwt,
+  authorizeRoles('admin', 'staff', 'dealer', 'host', 'customer'),
+  addstations
+);
 
 // ----------------------------------charging sessions------------------
-const {getchargingsession,sessionBilling} = require('./chargingsession');
+const { getchargingsession, sessionBilling } = require('./chargingsession');
 
 app.get('/api/sessions/recent', validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'), getchargingsession);
-app.get('/api/session/billing/:session_id',validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),sessionBilling)
+app.get('/api/session/billing/:session_id', validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'), sessionBilling)
 
 // ----------------------------------share access------------------------------------------------------
-const {shareaccess}=require('./accessshare')
+const { shareaccess } = require('./accessshare')
 app.post('/api/device/accessshare/:station_id',
-   validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
-   shareaccess);
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
+  shareaccess);
 
 
-const {stationconnectors}=require('../dashboard/stations')
+const { stationconnectors } = require('../dashboard/stations')
 app.get('/api/station/devices/:station_id',
   validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
   stationconnectors);
 
-const {displayChargerAndStation}=require('../dashboard/stations')
+const { displayChargerAndStation } = require('../dashboard/stations')
 
 app.get('/api/connector/qr/:ocppid',
-validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
-displayChargerAndStation)
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
+  displayChargerAndStation)
 
 
 // -----------------------------------switch -----------------------------
-const {toggleswitch}=require('./switch')
-app.post('/api/toggle/switch',validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),toggleswitch)
+const { toggleswitch } = require('./switch')
+app.post('/api/toggle/switch', validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'), toggleswitch)
 
 
 // ------------------------user fav-station--------------
-const {toggleFavorite,getAllFavorites}=require('./favourite')
+const { toggleFavorite, getAllFavorites } = require('./favourite')
 app.post('/api/toggle/fav/:station_id',
   validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
   toggleFavorite)
-  
+
 app.get('/api/fav/stations',
-    validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
-    getAllFavorites)
+  validateJwt, authorizeRoles('admin', 'customer', 'staff', 'dealer'),
+  getAllFavorites)
 module.exports = app
