@@ -76,7 +76,7 @@ const Swaggerdoc = {
         {
           "name": "long",
           "in": "query",
-        
+
           "schema": {
             "type": "number",
             "example": 77.5946
@@ -86,7 +86,7 @@ const Swaggerdoc = {
         {
           "name": "radius",
           "in": "query",
-       
+
           "schema": {
             "type": "number",
             "example": 5
@@ -101,7 +101,28 @@ const Swaggerdoc = {
             "example": 'aizo'
           },
           "description": "Radius in kilometers to search for charging stations"
+        },
+        {
+          "name": "type",
+          "in": "query",
+          "schema": {
+            "type": "string",
+            "example": "CCS"
+          },
+          "description": "Filter by connector type (e.g., CCS, Type2)"
+        },
+        {
+          "name": "power_output",
+          "in": "query",
+          "schema": {
+            "type": "number",
+            "format": "float",
+            "example": 50.0
+          },
+          "description": "Filter by connector power output (in kW)"
         }
+
+
       ],
       "responses": {
         "200": {
@@ -1319,93 +1340,93 @@ const Swaggerdoc = {
       }
     }
   },
- "/dashboard/api/add/station": {
-  "post": {
-    "tags": ["Charging Stations"],
-    "summary": "Add a new charging station with partners",
-    "security": [{ "bearerAuth": [] }],
-    "requestBody": {
-      "required": true,
-      "content": {
-        "application/json": {
-          "schema": {
-            "type": "object",
-            "properties": {
-              "name": { "type": "string" },
-              "latitude": { "type": "number", "format": "float" },
-              "longitude": { "type": "number", "format": "float" },
-              "amenities": { "type": "string" },
-              "contact_info": {
-                "type": "object",
-                "properties": {
-                  "phone": { "type": "string", "example": "8086945415" },
-                  "email": { "type": "string", "format": "email", "example": "support@example.com" }
-                },
-              },
-              "dynamic_pricing": {
-                "type": "object",
-                "properties": {
-                  "base_rate": {
-                    "type": "number",
-                    "format": "float",
-                    "example": 5.00
-                  }
-                  // Uncomment the below to allow advanced pricing logic:
-                  /*
-                  "time_based": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "start": { "type": "string", "example": "06:00" },
-                        "end": { "type": "string", "example": "10:00" },
-                        "rate": { "type": "number", "format": "float", "example": 6.00 }
-                      }
-                    }
-                  },
-                  "peak_hours": {
-                    "type": "object",
-                    "properties": {
-                      "enabled": { "type": "boolean", "example": true },
-                      "multiplier": { "type": "number", "format": "float", "example": 1.5 }
-                    }
-                  }
-                  */
-                }
-              },
-              "partners": {
-                "type": "array",
-                "items": {
+  "/dashboard/api/add/station": {
+    "post": {
+      "tags": ["Charging Stations"],
+      "summary": "Add a new charging station with partners",
+      "security": [{ "bearerAuth": [] }],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "latitude": { "type": "number", "format": "float" },
+                "longitude": { "type": "number", "format": "float" },
+                "amenities": { "type": "string" },
+                "contact_info": {
                   "type": "object",
                   "properties": {
-                    "user_id": { "type": "integer" },
-                    "role": { "type": "string", "example": "partner" },
-                    "share_percentage": { "type": "number", "format": "float", "example": 50.0 }
+                    "phone": { "type": "string", "example": "8086945415" },
+                    "email": { "type": "string", "format": "email", "example": "support@example.com" }
                   },
-                  "required": ["user_id"]
+                },
+                "dynamic_pricing": {
+                  "type": "object",
+                  "properties": {
+                    "base_rate": {
+                      "type": "number",
+                      "format": "float",
+                      "example": 5.00
+                    }
+                    // Uncomment the below to allow advanced pricing logic:
+                    /*
+                    "time_based": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "start": { "type": "string", "example": "06:00" },
+                          "end": { "type": "string", "example": "10:00" },
+                          "rate": { "type": "number", "format": "float", "example": 6.00 }
+                        }
+                      }
+                    },
+                    "peak_hours": {
+                      "type": "object",
+                      "properties": {
+                        "enabled": { "type": "boolean", "example": true },
+                        "multiplier": { "type": "number", "format": "float", "example": 1.5 }
+                      }
+                    }
+                    */
+                  }
+                },
+                "partners": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "user_id": { "type": "integer" },
+                      "role": { "type": "string", "example": "partner" },
+                      "share_percentage": { "type": "number", "format": "float", "example": 50.0 }
+                    },
+                    "required": ["user_id"]
+                  }
                 }
-              }
-            },
-            "required": ["name", "latitude", "longitude"]
+              },
+              "required": ["name", "latitude", "longitude"]
+            }
           }
         }
-      }
-    },
-    "responses": {
-      "201": {
-        "description": "Station and partners added successfully"
       },
-      "400": {
-        "description": "Invalid input"
-      },
-      "500": {
-        "description": "Internal server error"
+      "responses": {
+        "201": {
+          "description": "Station and partners added successfully"
+        },
+        "400": {
+          "description": "Invalid input"
+        },
+        "500": {
+          "description": "Internal server error"
+        }
       }
     }
-  }
-},
+  },
 
- 
+
 
   "/dashboard/api/list/station": {
     "get": {
@@ -1636,224 +1657,207 @@ const Swaggerdoc = {
       }
     }
   },
-  
-    "/app/api/sessions/recent": {
-      "get": {
-        "tags": ["Charging Sessions"],
-        "summary": "Get recent charging sessions for a user",
-        "security": [
-          {
-            "bearerAuth": []
+
+  "/app/api/sessions/recent": {
+    "get": {
+      "tags": ["Charging Sessions"],
+      "summary": "Get recent charging sessions for a user",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "status",
+          "in": "query",
+          "description": "Filter by session status (ongoing, completed, failed)",
+          "schema": {
+            "type": "string",
+            "enum": ["ongoing", "completed", "failed"]
           }
-        ],
-        "parameters": [
-          {
-            "name": "status",
-            "in": "query",
-            "description": "Filter by session status (ongoing, completed, failed)",
-            "schema": {
-              "type": "string",
-              "enum": ["ongoing", "completed", "failed"]
-            }
-          },
-          {
-            "name": "from",
-            "in": "query",
-            "description": "Start date filter (ISO 8601 format)",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "example": "2024-04-01T00:00:00Z"
-            }
-          },
-          {
-            "name": "to",
-            "in": "query",
-            "description": "End date filter (ISO 8601 format)",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "example": "2024-04-30T23:59:59Z"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "Number of sessions per page",
-            "schema": {
-              "type": "integer",
-              "default": 30
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "description": "Page number",
-            "schema": {
-              "type": "integer",
-              "default": 1
-            }
+        },
+        {
+          "name": "from",
+          "in": "query",
+          "description": "Start date filter (ISO 8601 format)",
+          "schema": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-04-01T00:00:00Z"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of recent charging sessions",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "page": {
-                      "type": "integer"
-                    },
-                    "limit": {
-                      "type": "integer"
-                    },
-                    "total_count": {
-                      "type": "integer"
-                    },
-                    "sessions": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": { "type": "integer" },
-                          "user_id": { "type": "integer" },
-                          "vehicle_id": { "type": "integer" },
-                          "connector_id": { "type": "integer" },
-                          "start_time": { "type": "string", "format": "date-time" },
-                          "end_time": { "type": "string", "format": "date-time", "nullable": true },
-                          "updated_at": { "type": "string", "format": "date-time", "nullable": true },
-                          "energy_used": { "type": "number", "format": "float" },
-                          "cost": { "type": "number", "format": "float" },
-                          "payment_method": {
-                            "type": "string",
-                            "enum": ["wallet", "RFID", "QR"]
-                          },
-                          "status": {
-                            "type": "string",
-                            "enum": ["ongoing", "completed", "failed"]
-                          },
-                          "created_at": { "type": "string", "format": "date-time" },
-                          "promotion_id": { "type": "integer", "nullable": true },
-                          "discount_amount": { "type": "number", "format": "float" },
-                          "sponsored_by": { "type": "integer", "nullable": true },
-                          "sponsorship_note": { "type": "string", "nullable": true }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Internal server error"
+        },
+        {
+          "name": "to",
+          "in": "query",
+          "description": "End date filter (ISO 8601 format)",
+          "schema": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-04-30T23:59:59Z"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Number of sessions per page",
+          "schema": {
+            "type": "integer",
+            "default": 30
+          }
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "description": "Page number",
+          "schema": {
+            "type": "integer",
+            "default": 1
           }
         }
-      }
-    },  
-    "/dashboard/api/stations/{station_id}/connectors": {
-      "post": {
-        "tags": ["Connectors"],
-        "summary": "Add a new connector to a station",
-        "description": "Adds a connector for a given station. Requires admin, staff, or dealer roles.",
-        "operationId": "addConnector",
-        "parameters": [
-          {
-            "name": "station_id",
-            "in": "path",
-            "required": true,
-            "description": "ID of the station to which the connector will be added",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
+      ],
+      "responses": {
+        "200": {
+          "description": "List of recent charging sessions",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "type": {
-                    "type": "string",
-                    "example": "Type2"
+                  "page": {
+                    "type": "integer"
                   },
-                  "power_output": {
-                    "type": "number",
-                    "example": 22.5
+                  "limit": {
+                    "type": "integer"
                   },
-                  "state": {
-                    "type": "string",
-                    "example": "available"
+                  "total_count": {
+                    "type": "integer"
                   },
-                  "status": {
-                    "type": "string",
-                    "example": "active"
-                  },
-                  "ocpp_id": {
-                    "type": "string",
-                    "example": "connector-001"
-                  },
-                  "last_updated": {
-                    "type": "string",
-                    "format": "date-time",
-                    "example": "2025-04-23T10:00:00Z"
-                  }
-                },
-                "required": ["ocpp_id"]
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Connector added successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Connector added successfully"
-                    },
-                    "connector": {
+                  "sessions": {
+                    "type": "array",
+                    "items": {
                       "type": "object",
-                      "example": {
-                        "id": 1,
-                        "station_id": "123",
-                        "type": "Type2",
-                        "power_output": 22.5,
-                        "state": "available",
-                        "status": "active",
-                        "ocpp_id": "connector-001",
-                        "last_updated": "2025-04-23T10:00:00Z"
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "user_id": { "type": "integer" },
+                        "vehicle_id": { "type": "integer" },
+                        "connector_id": { "type": "integer" },
+                        "start_time": { "type": "string", "format": "date-time" },
+                        "end_time": { "type": "string", "format": "date-time", "nullable": true },
+                        "updated_at": { "type": "string", "format": "date-time", "nullable": true },
+                        "energy_used": { "type": "number", "format": "float" },
+                        "cost": { "type": "number", "format": "float" },
+                        "payment_method": {
+                          "type": "string",
+                          "enum": ["wallet", "RFID", "QR"]
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": ["ongoing", "completed", "failed"]
+                        },
+                        "created_at": { "type": "string", "format": "date-time" },
+                        "promotion_id": { "type": "integer", "nullable": true },
+                        "discount_amount": { "type": "number", "format": "float" },
+                        "sponsored_by": { "type": "integer", "nullable": true },
+                        "sponsorship_note": { "type": "string", "nullable": true }
                       }
                     }
                   }
                 }
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Internal Server Error"
+          }
+        },
+        "400": {
+          "description": "Bad request"
+        },
+        "401": {
+          "description": "Unauthorized"
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    }
+  },
+  "/dashboard/api/stations/{station_id}/connectors": {
+    "post": {
+      "tags": ["Connectors"],
+      "summary": "Add a new connector to a station",
+      "description": "Adds a connector for a given station. Requires admin, staff, or dealer roles.",
+      "operationId": "addConnector",
+      "parameters": [
+        {
+          "name": "station_id",
+          "in": "path",
+          "required": true,
+          "description": "ID of the station to which the connector will be added",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "Type2"
+                },
+                "power_output": {
+                  "type": "number",
+                  "example": 22.5
+                },
+                "state": {
+                  "type": "string",
+                  "example": "available"
+                },
+                "status": {
+                  "type": "string",
+                  "example": "active"
+                },
+                "ocpp_id": {
+                  "type": "string",
+                  "example": "connector-001"
+                },
+                "last_updated": {
+                  "type": "string",
+                  "format": "date-time",
+                  "example": "2025-04-23T10:00:00Z"
+                }
+              },
+              "required": ["ocpp_id"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Connector added successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Connector added successfully"
+                  },
+                  "connector": {
+                    "type": "object",
+                    "example": {
+                      "id": 1,
+                      "station_id": "123",
+                      "type": "Type2",
+                      "power_output": 22.5,
+                      "state": "available",
+                      "status": "active",
+                      "ocpp_id": "connector-001",
+                      "last_updated": "2025-04-23T10:00:00Z"
                     }
                   }
                 }
@@ -1861,14 +1865,31 @@ const Swaggerdoc = {
             }
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
+        "500": {
+          "description": "Internal Server Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string",
+                    "example": "Internal Server Error"
+                  }
+                }
+              }
+            }
           }
-        ]
-      }
-    },
-    "/dashboard/api/connectors/{id}": {
+        }
+      },
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ]
+    }
+  },
+  "/dashboard/api/connectors/{id}": {
     "delete": {
       "tags": ["Connectors"],
       "summary": "Delete a connector",
@@ -1943,246 +1964,134 @@ const Swaggerdoc = {
       ]
     }
   },
-   "/dashboard/api/connectors/update/{id}": {
-      "put": {
-        "summary": "Update connector fields",
-        "description": "Update one or more fields in a connector. Only non-null fields will be updated.",
-        "tags": ["Connectors"],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of the connector to update",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Any combination of fields to update. Only non-null fields will be applied.",
+  "/dashboard/api/connectors/update/{id}": {
+    "put": {
+      "summary": "Update connector fields",
+      "description": "Update one or more fields in a connector. Only non-null fields will be updated.",
+      "tags": ["Connectors"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "ID of the connector to update",
           "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "example": "CCS"
-                  },
-                  "power_output": {
-                    "type": "number",
-                    "format": "float",
-                    "example": 60.0
-                  },
-                  "state": {
-                    "type": "string",
-                    "example": "Active"
-                  },
-                  "status": {
-                    "type": "string",
-                    "example": "Available"
-                  },
-                  "ocpp_id": {
-                    "type": "string",
-                    "example": "OC123"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Connector updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Connector updated"
-                    },
-                    "connector": {
-                      "type": "object",
-                      "properties": {
-                        "id": { "type": "integer", "example": 3 },
-                        "station_id": { "type": "integer", "example": 1 },
-                        "type": { "type": "string", "example": "CCS" },
-                        "power_output": { "type": "number", "example": 60.0 },
-                        "state": { "type": "string", "example": "Active" },
-                        "status": { "type": "string", "example": "Available" },
-                        "ocpp_id": { "type": "string", "example": "OC123" },
-                        "last_updated": { "type": "string", "format": "date-time", "example": "2025-05-20T10:00:00Z" },
-                        "created_at": { "type": "string", "format": "date-time", "example": "2023-08-01T12:00:00Z" }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "No valid fields provided",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "No valid fields provided to update"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Connector not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Connector not found"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Internal server error"
-                    }
-                  }
-                }
-              }
-            }
+          "schema": {
+            "type": "integer"
           }
         }
-      }
-    },
-  "/app/api/device/accessshare/{station_id}": {
-      "post": {
-        "tags": ["Access Share"],
-        "summary": "Share device access by linking to a station",
-        "description": "Links devices associated with a 'thing' to a charging station as either connectors or plug switches. Fails if any device is already linked.",
-        "operationId": "shareDeviceAccess",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "station_id",
-            "in": "path",
-            "description": "ID of the charging station to link devices to",
-            "required": true,
+      ],
+      "requestBody": {
+        "description": "Any combination of fields to update. Only non-null fields will be applied.",
+        "required": true,
+        "content": {
+          "application/json": {
             "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "serial": {
-                    "type": "string",
-                    "example": "ABC123XYZ"
-                  },
-                  "securitykey": {
-                    "type": "string",
-                    "example": "secureKey987"
-                  }
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "CCS"
                 },
-                "required": ["serial", "securitykey"]
+                "power_output": {
+                  "type": "number",
+                  "format": "float",
+                  "example": 60.0
+                },
+                "state": {
+                  "type": "string",
+                  "example": "Active"
+                },
+                "status": {
+                  "type": "string",
+                  "example": "Available"
+                },
+                "ocpp_id": {
+                  "type": "string",
+                  "example": "OC123"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Connector updated successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Connector updated"
+                  },
+                  "connector": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer", "example": 3 },
+                      "station_id": { "type": "integer", "example": 1 },
+                      "type": { "type": "string", "example": "CCS" },
+                      "power_output": { "type": "number", "example": 60.0 },
+                      "state": { "type": "string", "example": "Active" },
+                      "status": { "type": "string", "example": "Available" },
+                      "ocpp_id": { "type": "string", "example": "OC123" },
+                      "last_updated": { "type": "string", "format": "date-time", "example": "2025-05-20T10:00:00Z" },
+                      "created_at": { "type": "string", "format": "date-time", "example": "2023-08-01T12:00:00Z" }
+                    }
+                  }
+                }
               }
             }
           }
         },
-        "responses": {
-          "201": {
-            "description": "Devices successfully linked",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Devices successfully linked"
-                    }
+        "400": {
+          "description": "No valid fields provided",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string",
+                    "example": "No valid fields provided to update"
                   }
                 }
               }
             }
-          },
-          "400": {
-            "description": "Device already connected",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Device already connected"
-                    }
+          }
+        },
+        "404": {
+          "description": "Connector not found",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string",
+                    "example": "Connector not found"
                   }
                 }
               }
             }
-          },
-          "404": {
-            "description": "Thing not found or no devices found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Thing not found or invalid credentials"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Internal server error"
-                    }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string",
+                    "example": "Internal server error"
                   }
                 }
               }
@@ -2190,73 +2099,185 @@ const Swaggerdoc = {
           }
         }
       }
-    },
+    }
+  },
+  "/app/api/device/accessshare/{station_id}": {
+    "post": {
+      "tags": ["Access Share"],
+      "summary": "Share device access by linking to a station",
+      "description": "Links devices associated with a 'thing' to a charging station as either connectors or plug switches. Fails if any device is already linked.",
+      "operationId": "shareDeviceAccess",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "station_id",
+          "in": "path",
+          "description": "ID of the charging station to link devices to",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "serial": {
+                  "type": "string",
+                  "example": "ABC123XYZ"
+                },
+                "securitykey": {
+                  "type": "string",
+                  "example": "secureKey987"
+                }
+              },
+              "required": ["serial", "securitykey"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Devices successfully linked",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Devices successfully linked"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Device already connected",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Device already connected"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Thing not found or no devices found",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Thing not found or invalid credentials"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Internal server error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
 
-    "/app/api/station/devices/{station_id}": {
-      "get": {
-        "tags": ["Station Devices"],
-        "summary": "Get connectors and/or plug switches for a station",
-        "security": [
-          {
-            "bearerAuth": []
+  "/app/api/station/devices/{station_id}": {
+    "get": {
+      "tags": ["Station Devices"],
+      "summary": "Get connectors and/or plug switches for a station",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "station_id",
+          "in": "path",
+          "required": true,
+          "description": "ID of the station",
+          "schema": {
+            "type": "integer"
           }
-        ],
-        "parameters": [
-          {
-            "name": "station_id",
-            "in": "path",
-            "required": true,
-            "description": "ID of the station",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "type",
-            "in": "query",
-            "required": false,
-            "description": "Device type: 'charger' for connectors, 'switch' for plug switches. Leave empty to fetch both.",
-            "schema": {
-              "type": "string",
-              "enum": ["charger", "switch"]
-            }
+        },
+        {
+          "name": "type",
+          "in": "query",
+          "required": false,
+          "description": "Device type: 'charger' for connectors, 'switch' for plug switches. Leave empty to fetch both.",
+          "schema": {
+            "type": "string",
+            "enum": ["charger", "switch"]
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "chargers": {
-                      "type": "array",
-                      "items": {
-                        // "$ref": "#/components/schemas/Connector"
-                      }
-                    },
-                    "switches": {
-                      "type": "array",
-                      "items": {
-                        // "$ref": "#/components/schemas/PlugSwitch"
-                      }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "chargers": {
+                    "type": "array",
+                    "items": {
+                      // "$ref": "#/components/schemas/Connector"
+                    }
+                  },
+                  "switches": {
+                    "type": "array",
+                    "items": {
+                      // "$ref": "#/components/schemas/PlugSwitch"
                     }
                   }
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
+        },
+        "400": {
+          "description": "Bad Request"
+        },
+        "500": {
+          "description": "Internal Server Error"
         }
       }
-    },
-    "/app/api/connector/qr/{ocppid}": {
+    }
+  },
+  "/app/api/connector/qr/{ocppid}": {
     "get": {
       "summary": "Get connector and station info by OCPP ID",
       "description": "Returns details of a connector and its associated charging station using the connector's OCPP ID.",
@@ -2475,129 +2496,128 @@ const Swaggerdoc = {
       }
     }
   },
-    "/app/api/session/billing/{session_id}": {
-      "get": {
-        "summary": "Get billing details for a charging session",
-        "tags": ["Sessions Billing"],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "session_id",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            },
-            "description": "Unique ID of the charging session"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Billing session details",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "session_id": {
-                      "type": "integer",
-                      "example": 12
-                    },
-                    "user_name": {
-                      "type": "string",
-                      "example": "Alice"
-                    },
-                    "vehicle_number": {
-                      "type": "string",
-                      "example": "XYZ1234"
-                    },
-                    "start_time": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2025-04-28T10:00:00Z"
-                    },
-                    "end_time": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2025-04-28T11:00:00Z"
-                    },
-                    "energy_used": {
-                      "type": "number",
-                      "format": "float",
-                      "example": 5.2
-                    },
-                    "power": {
-                      "type": "number",
-                      "format": "float",
-                      "example": 3.1
-                    },
-                    "ampere": {
-                      "type": "number",
-                      "format": "float",
-                      "example": 16
-                    },
-                    "voltage": {
-                      "type": "number",
-                      "format": "float",
-                      "example": 220
-                    },
-                    "cost": {
-                      "type": "number",
-                      "format": "float",
-                      "example": 120.00
-                    },
-                    "payment_method": {
-                      "type": "string",
-                      "enum": ["wallet", "RFID", "QR"],
-                      "example": "wallet"
-                    },
-                    "status": {
-                      "type": "string",
-                      "enum": ["ongoing", "completed", "failed"],
-                      "example": "completed"
-                    },
-                    "transaction": {
+  "/app/api/session/billing/{session_id}": {
+    "get": {
+      "summary": "Get billing details for a charging session",
+      "tags": ["Sessions Billing"],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "session_id",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "Unique ID of the charging session"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Billing session details",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "session_id": {
+                    "type": "integer",
+                    "example": 12
+                  },
+                  "user_name": {
+                    "type": "string",
+                    "example": "Alice"
+                  },
+                  "vehicle_number": {
+                    "type": "string",
+                    "example": "XYZ1234"
+                  },
+                  "start_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-04-28T10:00:00Z"
+                  },
+                  "end_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-04-28T11:00:00Z"
+                  },
+                  "energy_used": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 5.2
+                  },
+                  "power": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 3.1
+                  },
+                  "ampere": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 16
+                  },
+                  "voltage": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 220
+                  },
+                  "cost": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 120.00
+                  },
+                  "payment_method": {
+                    "type": "string",
+                    "enum": ["wallet", "RFID", "QR"],
+                    "example": "wallet"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["ongoing", "completed", "failed"],
+                    "example": "completed"
+                  },
+                  "transaction": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "example": 22
+                      },
+                      "amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 120.00
+                      },
+                      "type": {
+                        "type": "string",
+                        "example": "debit"
+                      },
+                      "status": {
+                        "type": "string",
+                        "example": "completed"
+                      }
+                    }
+                  },
+                  "connector": {
+                    "type": "array",
+                    "items": {
                       "type": "object",
                       "properties": {
                         "id": {
                           "type": "integer",
-                          "example": 22
+                          "example": 5
                         },
-                        "amount": {
-                          "type": "number",
-                          "format": "float",
-                          "example": 120.00
+                        "ocppid": {
+                          "type": "string",
+                          "example": "OCPP123"
                         },
                         "type": {
                           "type": "string",
-                          "example": "debit"
+                          "example": "Type2"
                         },
-                        "status": {
+                        "deviceid": {
                           "type": "string",
-                          "example": "completed"
-                        }
-                      }
-                    },
-                    "connector": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "integer",
-                            "example": 5
-                          },
-                          "ocppid": {
-                            "type": "string",
-                            "example": "OCPP123"
-                          },
-                          "type": {
-                            "type": "string",
-                            "example": "Type2"
-                          },
-                          "deviceid": {
-                            "type": "string",
-                            "example": "ESP8266-ABC123"
-                          }
+                          "example": "ESP8266-ABC123"
                         }
                       }
                     }
@@ -2605,740 +2625,740 @@ const Swaggerdoc = {
                 }
               }
             }
-          },
-          "404": {
-            "description": "Session not found"
-          },
-          "500": {
-            "description": "Internal server error"
           }
+        },
+        "404": {
+          "description": "Session not found"
+        },
+        "500": {
+          "description": "Internal server error"
         }
       }
-    },
-    "/app/api/set/selected/vehicles/{vehicle_id}": {
-      "post": {
-        "tags": ["Vehicles"],
-        "summary": "Set selected vehicle for a user",
-        "description": "Sets the selected vehicle for the authenticated user. Only one vehicle per user can be marked as currently selected.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "vehicle_id",
-            "in": "path",
-            "description": "ID of the vehicle to be set as selected",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Vehicle selected successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Vehicle selected successfully"
-                    },
-                    "vehicle": {
-                      "$ref": "#/components/schemas/Vehicle"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "user_id and vehicle_id are required"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Vehicle not found or does not belong to the user",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Vehicle not found or does not belong to the user"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Server error"
-                    }
-                  }
-                }
-              }
-            }
-          }
+    }
+  },
+  "/app/api/set/selected/vehicles/{vehicle_id}": {
+    "post": {
+      "tags": ["Vehicles"],
+      "summary": "Set selected vehicle for a user",
+      "description": "Sets the selected vehicle for the authenticated user. Only one vehicle per user can be marked as currently selected.",
+      "security": [
+        {
+          "bearerAuth": []
         }
-      }
-    },
-    "/dashboard/api/user/add/station": {
-      "post": {
-        "summary": "Add a new charging station",
-        "tags": ["Charging Stations"],
-        "security": [
-          { "bearerAuth": [] }
-        ],
-        "requestBody": {
+      ],
+      "parameters": [
+        {
+          "name": "vehicle_id",
+          "in": "path",
+          "description": "ID of the vehicle to be set as selected",
           "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Vehicle selected successfully",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "name": { "type": "string" },
-                  "latitude": { "type": "number" },
-                  "longitude": { "type": "number" },
-                  "amenities": { "type": "string" },
-                  "contact_info": { "type": "string" },
-                  "dynamic_pricing": { "type": "boolean" }
-                },
-                "required": ["name", "latitude", "longitude", "contact_info"]
+                  "message": {
+                    "type": "string",
+                    "example": "Vehicle selected successfully"
+                  },
+                  "vehicle": {
+                    "$ref": "#/components/schemas/Vehicle"
+                  }
+                }
               }
             }
           }
         },
-        "responses": {
-          "201": {
-            "description": "Charging station created successfully with user as partner",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": { "type": "string" },
-                    "station": { "type": "object" }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request - user_id missing"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/dashboard/api/enable/toggle/{station_id}": {
-      "patch": {
-        "summary": "Toggle enable/disable status of a station",
-        "tags": ["Charging Stations"],
-        "security": [
-          { "bearerAuth": [] }
-        ],
-        "parameters": [
-          {
-            "name": "station_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID of the charging station"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Station status toggled successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": { "type": "string" },
-                    "station": { "type": "object" }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request - Station ID missing"
-          },
-          "404": {
-            "description": "Station not found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/app/api/toggle/switch": {
-      "post": {
-        "summary": "Toggle power state of a smart switch",
-        "tags": ["Switch Control"],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
+        "400": {
+          "description": "Bad Request",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "deviceid": {
+                  "error": {
                     "type": "string",
-                    "example": "Thing123_1",
-                    "description": "Format must be <thingName>_<switchNumber>"
-                  },
-                  "state": {
-                    "type": "string",
-                    "enum": ["on", "off"]
-                  },
-                  "voltage": {
-                    "type": "number",
-                    "default": 100
-                  },
-                  "payment_method": {
-                    "type": "string",
-                    "nullable": true
-                  },
-                  "promotion_id": {
-                    "type": "string",
-                    "nullable": true
-                  },
-                  "sponsored_by": {
-                    "type": "string",
-                    "nullable": true
-                  },
-                  "sponsorship_note": {
-                    "type": "string",
-                    "nullable": true
+                    "example": "user_id and vehicle_id are required"
                   }
-                },
-                "required": ["deviceid", "state"]
+                }
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Switch toggled successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "session": {
-                      "type": "object",
-                      "nullable": true
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request payload",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/dashboard/api/connectors/{id}": {
-      "delete": {
-        "summary": "Delete a connector by ID",
-        "tags": ["Access Share"],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of the connector to delete",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Connector deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Connector deleted successfully"
-                    },
-                    "connector": {
-                      "type": "object",
-                      "description": "Details of the deleted connector"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Connector not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Connector not found"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Internal Server Error"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/dashboard/api/switch/remove/{deviceId}": {
-      "delete": {
-        "summary": "Delete all plug switches linked to a device's thingId",
-        "description": "Deletes all plug_switches associated with any device under the same thing as the provided deviceId. Devices themselves are not deleted.",
-        "tags": ["Access Share"],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "deviceId",
-            "in": "path",
-            "description": "The deviceId used to find related devices via thingId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Plug switches successfully deleted for all devices under the same thing",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Plug switches for all devices under the thing deleted successfully"
-                    },
-                    "deleted": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "description": "Details of each deleted plug switch"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Device or plug switches not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Device not found"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "No plug switches found for devices of this thing"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Internal Server Error"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-     "/payment/create-order": {
-      "post": {
-        "summary": "Create Razorpay Order",
-        "tags": ["Payment Integration"],
-        "requestBody": {
-          "required": true,
+        "404": {
+          "description": "Vehicle not found or does not belong to the user",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "amount": {
-                    "type": "number",
-                    "example": 500
-                  }
-                },
-                "required": ["amount"]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Order created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": { "type": "string" },
-                    "amount": { "type": "number" },
-                    "currency": { "type": "string" },
-                    "receipt": { "type": "string" },
-                    "status": { "type": "string" }
+                  "error": {
+                    "type": "string",
+                    "example": "Vehicle not found or does not belong to the user"
                   }
                 }
               }
             }
-          },
-          "500": {
-            "description": "Server error"
           }
-        }
-      }
-    },
-    "/payment/verify": {
-      "post": {
-        "summary": "Verify Razorpay Payment Signature",
-        "tags": ["Payment Integration"],
-        "requestBody": {
-          "required": true,
+        },
+        "500": {
+          "description": "Server error",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "razorpay_order_id": {
+                  "error": {
                     "type": "string",
-                    "example": "order_KlG5X2DFvJr82a"
-                  },
-                  "razorpay_payment_id": {
-                    "type": "string",
-                    "example": "pay_KlG6Iv3KzU8xEv"
-                  },
-                  "razorpay_signature": {
-                    "type": "string",
-                    "example": "f58a34a7c2c826089d3d1324e872059cc1702f85c21c23bd42b53fbb7c97c0a0"
+                    "example": "Server error"
                   }
-                },
-                "required": ["razorpay_order_id", "razorpay_payment_id", "razorpay_signature"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/dashboard/api/user/add/station": {
+    "post": {
+      "summary": "Add a new charging station",
+      "tags": ["Charging Stations"],
+      "security": [
+        { "bearerAuth": [] }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "latitude": { "type": "number" },
+                "longitude": { "type": "number" },
+                "amenities": { "type": "string" },
+                "contact_info": { "type": "string" },
+                "dynamic_pricing": { "type": "boolean" }
+              },
+              "required": ["name", "latitude", "longitude", "contact_info"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Charging station created successfully with user as partner",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string" },
+                  "station": { "type": "object" }
+                }
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Payment verified successfully"
-          },
-          "400": {
-            "description": "Invalid signature"
-          }
+        "400": {
+          "description": "Bad request - user_id missing"
+        },
+        "500": {
+          "description": "Internal Server Error"
         }
       }
-    },
-
-    "/app/api/toggle/fav/{station_id}": {
-      "post": {
-        "tags": ["Favorites"],
-        "summary": "Toggle favorite status of a charging station",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "station_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            },
-            "description": "ID of the charging station"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Favorite status toggled successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "is_favorite": {
-                      "type": "boolean"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
-      }
-    },
-    "/app/api/fav/stations": {
-      "get": {
-        "tags": ["Favorites"],
-        "summary": "Get all favorited charging stations for the logged-in user",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "default": 1
-            },
-            "description": "Page number for pagination"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "default": 10
-            },
-            "description": "Number of records per page"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of favorited charging stations",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "page": {
-                      "type": "integer"
-                    },
-                    "limit": {
-                      "type": "integer"
-                    },
-                    "total": {
-                      "type": "integer"
-                    },
-                    "totalPages": {
-                      "type": "integer"
-                    },
-                    "favorites": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": { "type": "integer" },
-                          "name": { "type": "string" },
-                          "location": { "type": "string" },
-                          "is_favorite": { "type": "boolean" }
-                          // Add more fields depending on your charging_stations schema
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
-      }
-    },
-
-     "/dashboard/api/stations/upload/images/{stationId}": {
-      "post": {
-        "tags": ["Charging Stations"],
-        "summary": "Upload images for a charging station",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "stationId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            },
-            "description": "ID of the charging station"
-          }
-        ],
-        "requestBody": {
+    }
+  },
+  "/dashboard/api/enable/toggle/{station_id}": {
+    "patch": {
+      "summary": "Toggle enable/disable status of a station",
+      "tags": ["Charging Stations"],
+      "security": [
+        { "bearerAuth": [] }
+      ],
+      "parameters": [
+        {
+          "name": "station_id",
+          "in": "path",
           "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "ID of the charging station"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Station status toggled successfully",
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "primary_index": {
-                    "type": "integer",
-                    "description": "Index of the image to be set as primary (e.g., 0 for the first image)"
+                  "message": { "type": "string" },
+                  "station": { "type": "object" }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request - Station ID missing"
+        },
+        "404": {
+          "description": "Station not found"
+        },
+        "500": {
+          "description": "Internal Server Error"
+        }
+      }
+    }
+  },
+  "/app/api/toggle/switch": {
+    "post": {
+      "summary": "Toggle power state of a smart switch",
+      "tags": ["Switch Control"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "deviceid": {
+                  "type": "string",
+                  "example": "Thing123_1",
+                  "description": "Format must be <thingName>_<switchNumber>"
+                },
+                "state": {
+                  "type": "string",
+                  "enum": ["on", "off"]
+                },
+                "voltage": {
+                  "type": "number",
+                  "default": 100
+                },
+                "payment_method": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "promotion_id": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "sponsored_by": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "sponsorship_note": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "required": ["deviceid", "state"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Switch toggled successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
                   },
-                  "files": {
+                  "session": {
+                    "type": "object",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Invalid request payload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/dashboard/api/connectors/{id}": {
+    "delete": {
+      "summary": "Delete a connector by ID",
+      "tags": ["Access Share"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "ID of the connector to delete",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Connector deleted successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Connector deleted successfully"
+                  },
+                  "connector": {
+                    "type": "object",
+                    "description": "Details of the deleted connector"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Connector not found",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string",
+                    "example": "Connector not found"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string",
+                    "example": "Internal Server Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/dashboard/api/switch/remove/{deviceId}": {
+    "delete": {
+      "summary": "Delete all plug switches linked to a device's thingId",
+      "description": "Deletes all plug_switches associated with any device under the same thing as the provided deviceId. Devices themselves are not deleted.",
+      "tags": ["Access Share"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "deviceId",
+          "in": "path",
+          "description": "The deviceId used to find related devices via thingId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Plug switches successfully deleted for all devices under the same thing",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Plug switches for all devices under the thing deleted successfully"
+                  },
+                  "deleted": {
                     "type": "array",
                     "items": {
-                      "type": "string",
-                      "format": "binary"
-                    },
-                    "description": "The image files to be uploaded"
+                      "type": "object",
+                      "description": "Details of each deleted plug switch"
+                    }
                   }
                 }
               }
             }
           }
         },
-        "responses": {
-          "201": {
-            "description": "Images uploaded successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Images uploaded successfully"
-                    },
-                    "images": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "url": {
-                            "type": "string",
-                            "description": "URL of the uploaded image"
-                          },
-                          "is_primary": {
-                            "type": "boolean",
-                            "description": "Indicates if the image is primary"
-                          }
+        "404": {
+          "description": "Device or plug switches not found",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string",
+                    "example": "Device not found"
+                  },
+                  "message": {
+                    "type": "string",
+                    "example": "No plug switches found for devices of this thing"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string",
+                    "example": "Internal Server Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/payment/create-order": {
+    "post": {
+      "summary": "Create Razorpay Order",
+      "tags": ["Payment Integration"],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "number",
+                  "example": 500
+                }
+              },
+              "required": ["amount"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Order created successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "amount": { "type": "number" },
+                  "currency": { "type": "string" },
+                  "receipt": { "type": "string" },
+                  "status": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/payment/verify": {
+    "post": {
+      "summary": "Verify Razorpay Payment Signature",
+      "tags": ["Payment Integration"],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "razorpay_order_id": {
+                  "type": "string",
+                  "example": "order_KlG5X2DFvJr82a"
+                },
+                "razorpay_payment_id": {
+                  "type": "string",
+                  "example": "pay_KlG6Iv3KzU8xEv"
+                },
+                "razorpay_signature": {
+                  "type": "string",
+                  "example": "f58a34a7c2c826089d3d1324e872059cc1702f85c21c23bd42b53fbb7c97c0a0"
+                }
+              },
+              "required": ["razorpay_order_id", "razorpay_payment_id", "razorpay_signature"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Payment verified successfully"
+        },
+        "400": {
+          "description": "Invalid signature"
+        }
+      }
+    }
+  },
+
+  "/app/api/toggle/fav/{station_id}": {
+    "post": {
+      "tags": ["Favorites"],
+      "summary": "Toggle favorite status of a charging station",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "station_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "ID of the charging station"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Favorite status toggled successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "is_favorite": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    }
+  },
+  "/app/api/fav/stations": {
+    "get": {
+      "tags": ["Favorites"],
+      "summary": "Get all favorited charging stations for the logged-in user",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "page",
+          "in": "query",
+          "schema": {
+            "type": "integer",
+            "default": 1
+          },
+          "description": "Page number for pagination"
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "schema": {
+            "type": "integer",
+            "default": 10
+          },
+          "description": "Number of records per page"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "List of favorited charging stations",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  },
+                  "total": {
+                    "type": "integer"
+                  },
+                  "totalPages": {
+                    "type": "integer"
+                  },
+                  "favorites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "name": { "type": "string" },
+                        "location": { "type": "string" },
+                        "is_favorite": { "type": "boolean" }
+                        // Add more fields depending on your charging_stations schema
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    }
+  },
+
+  "/dashboard/api/stations/upload/images/{stationId}": {
+    "post": {
+      "tags": ["Charging Stations"],
+      "summary": "Upload images for a charging station",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "stationId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "ID of the charging station"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "multipart/form-data": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "primary_index": {
+                  "type": "integer",
+                  "description": "Index of the image to be set as primary (e.g., 0 for the first image)"
+                },
+                "files": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "description": "The image files to be uploaded"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Images uploaded successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Images uploaded successfully"
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "description": "URL of the uploaded image"
+                        },
+                        "is_primary": {
+                          "type": "boolean",
+                          "description": "Indicates if the image is primary"
                         }
                       }
                     }
@@ -3346,182 +3366,48 @@ const Swaggerdoc = {
                 }
               }
             }
-          },
-          "400": {
-            "description": "No images uploaded or bad request"
-          },
-          "500": {
-            "description": "Internal server error"
           }
+        },
+        "400": {
+          "description": "No images uploaded or bad request"
+        },
+        "500": {
+          "description": "Internal server error"
         }
       }
-    },
-     "/dashboard/api/stations/images/{stationId}": {
-      "get": {
-        "tags": ["Charging Stations"],
-        "summary": "Get all images for a charging station",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "stationId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            },
-            "description": "ID of the charging station"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of images for the charging station",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "images": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "integer"
-                          },
-                          "station_id": {
-                            "type": "integer"
-                          },
-                          "image_url": {
-                            "type": "string",
-                            "description": "URL of the image"
-                          },
-                          "is_primary": {
-                            "type": "boolean",
-                            "description": "Indicates if this image is the primary image"
-                          },
-                          "uploaded_at": {
-                            "type": "string",
-                            "format": "date-time",
-                            "description": "Timestamp when the image was uploaded"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "No images found for the station"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
+    }
+  },
+  "/dashboard/api/stations/images/{stationId}": {
+    "get": {
+      "tags": ["Charging Stations"],
+      "summary": "Get all images for a charging station",
+      "security": [
+        {
+          "bearerAuth": []
         }
-      }
-    },
-    "/dashboard/api/stations/images/{stationId}/{imageId}": {
-      "delete": {
-        "tags": ["Charging Stations"],
-        "summary": "Delete an image for a charging station",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "stationId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            },
-            "description": "ID of the charging station"
+      ],
+      "parameters": [
+        {
+          "name": "stationId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
           },
-          {
-            "name": "imageId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            },
-            "description": "ID of the image to delete"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Image deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Image deleted successfully"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Image not found"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
+          "description": "ID of the charging station"
         }
-      }
-    },
-    "/dashboard/api/stations/images/{stationId}/{imageId}/primary": {
-      "put": {
-        "tags": ["Charging Stations"],
-        "summary": "Set an image as primary for a station",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "stationId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            },
-            "description": "ID of the charging station"
-          },
-          {
-            "name": "imageId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            },
-            "description": "ID of the image to set as primary"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Image set as primary successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Image set as primary successfully"
-                    },
-                    "image": {
+      ],
+      "responses": {
+        "200": {
+          "description": "List of images for the charging station",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "images": {
+                    "type": "array",
+                    "items": {
                       "type": "object",
                       "properties": {
                         "id": {
@@ -3531,14 +3417,17 @@ const Swaggerdoc = {
                           "type": "integer"
                         },
                         "image_url": {
-                          "type": "string"
+                          "type": "string",
+                          "description": "URL of the image"
                         },
                         "is_primary": {
-                          "type": "boolean"
+                          "type": "boolean",
+                          "description": "Indicates if this image is the primary image"
                         },
                         "uploaded_at": {
                           "type": "string",
-                          "format": "date-time"
+                          "format": "date-time",
+                          "description": "Timestamp when the image was uploaded"
                         }
                       }
                     }
@@ -3546,16 +3435,148 @@ const Swaggerdoc = {
                 }
               }
             }
-          },
-          "404": {
-            "description": "Image not found or invalid for this station"
-          },
-          "500": {
-            "description": "Internal server error"
           }
+        },
+        "404": {
+          "description": "No images found for the station"
+        },
+        "500": {
+          "description": "Internal server error"
         }
       }
-    },
+    }
+  },
+  "/dashboard/api/stations/images/{stationId}/{imageId}": {
+    "delete": {
+      "tags": ["Charging Stations"],
+      "summary": "Delete an image for a charging station",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "stationId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "ID of the charging station"
+        },
+        {
+          "name": "imageId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "ID of the image to delete"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Image deleted successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Image deleted successfully"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Image not found"
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    }
+  },
+  "/dashboard/api/stations/images/{stationId}/{imageId}/primary": {
+    "put": {
+      "tags": ["Charging Stations"],
+      "summary": "Set an image as primary for a station",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "stationId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "ID of the charging station"
+        },
+        {
+          "name": "imageId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "ID of the image to set as primary"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Image set as primary successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Image set as primary successfully"
+                  },
+                  "image": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      },
+                      "station_id": {
+                        "type": "integer"
+                      },
+                      "image_url": {
+                        "type": "string"
+                      },
+                      "is_primary": {
+                        "type": "boolean"
+                      },
+                      "uploaded_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Image not found or invalid for this station"
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    }
+  },
 };
 
 module.exports = Swaggerdoc;
