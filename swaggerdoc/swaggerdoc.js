@@ -1943,7 +1943,7 @@ const Swaggerdoc = {
       ]
     }
   },
-   "/dashboard/api/connectors/{id}": {
+   "/dashboard/api/connectors/update/{id}": {
       "put": {
         "summary": "Update connector fields",
         "description": "Update one or more fields in a connector. Only non-null fields will be updated.",

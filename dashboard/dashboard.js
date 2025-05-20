@@ -134,7 +134,7 @@ dashboard.post('/api/stations/:station_id/connectors',
     authorizeRoles('admin', 'staff', 'dealer'),
     deleteswitch
   );
-  dashboard.put('/api/connectors/:id',
+  dashboard.put('/api/connectors/update/:id',
     validateJwt,
     authorizeRoles('admin', 'staff', 'dealer'),
     updateconnector
