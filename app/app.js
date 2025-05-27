@@ -19,6 +19,23 @@ function haversine(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
+function parseRadius(radiusStr) {
+  if (!radiusStr) return null;
+
+  let meters = 0;
+  const regex = /(\d+)\s*(km|m)/g;
+  let match;
+
+  while ((match = regex.exec(radiusStr.toLowerCase())) !== null) {
+    const value = parseFloat(match[1]);
+    const unit = match[2];
+
+    if (unit === 'km') meters += value * 1000;
+    else if (unit === 'm') meters += value;
+  }
+
+  return meters;
+}
 
 // ..................................... find chargers .............................................................
 
@@ -268,7 +285,10 @@ app.get('/api/chargers/suggestions', async (req, res) => {
 
     const userLat = parseFloat(lat);
     const userLon = parseFloat(lon);
-    const radiusKm = parseFloat(radius); // radius in kilometers
+
+    // Parse radius like "2km 30m" into meters
+    const radiusMeters = parseRadius(radius);
+    if (radiusMeters === null) return res.status(400).json({ error: 'Invalid radius format.' });
 
     // Step 1: fetch stations matching text (no radius filter in DB for simplicity)
     const query = `
@@ -284,14 +304,18 @@ app.get('/api/chargers/suggestions', async (req, res) => {
 
     let stations = result.rows;
 
-    if (!isNaN(userLat) && !isNaN(userLon) && !isNaN(radiusKm)) {
+    if (!isNaN(userLat) && !isNaN(userLon)) {
       stations = stations
         .map(station => ({
           ...station,
-          distance: haversine(userLat, userLon, station.latitude, station.longitude) / 1000, // convert to km
+          distance: haversine(userLat, userLon, station.latitude, station.longitude), // in meters
         }))
-        .filter(station => station.distance <= radiusKm) // filter using km
-        .sort((a, b) => a.distance - b.distance);
+        .filter(station => station.distance <= radiusMeters)
+        .sort((a, b) => a.distance - b.distance)
+        .map(station => ({
+          ...station,
+          distance_km: (station.distance / 1000).toFixed(3), // distance in km string
+        }));
     }
 
     stations = stations.slice(0, 10);
@@ -302,6 +326,7 @@ app.get('/api/chargers/suggestions', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 
 // ............................ wallet test ..........................................
