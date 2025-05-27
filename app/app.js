@@ -268,10 +268,7 @@ app.get('/api/chargers/suggestions', async (req, res) => {
 
     const userLat = parseFloat(lat);
     const userLon = parseFloat(lon);
-    const radiusKm = parseFloat(radius); // radius in km
-
-    // Convert km to meters
-    const maxRadius = !isNaN(radiusKm) ? radiusKm * 1000 : NaN;
+    const radiusKm = parseFloat(radius); // radius in kilometers
 
     // Step 1: fetch stations matching text (no radius filter in DB for simplicity)
     const query = `
@@ -285,20 +282,18 @@ app.get('/api/chargers/suggestions', async (req, res) => {
     const values = [`%${q.toLowerCase()}%`];
     const result = await db.query(query, values);
 
-    // Step 2: calculate distance and filter/sort
     let stations = result.rows;
 
-    if (!isNaN(userLat) && !isNaN(userLon) && !isNaN(maxRadius)) {
+    if (!isNaN(userLat) && !isNaN(userLon) && !isNaN(radiusKm)) {
       stations = stations
         .map(station => ({
           ...station,
-          distance: haversine(userLat, userLon, station.latitude, station.longitude),
+          distance: haversine(userLat, userLon, station.latitude, station.longitude) / 1000, // convert to km
         }))
-        .filter(station => station.distance <= maxRadius)
+        .filter(station => station.distance <= radiusKm) // filter using km
         .sort((a, b) => a.distance - b.distance);
     }
 
-    // Step 3: limit results after filtering
     stations = stations.slice(0, 10);
 
     res.json({ suggestions: stations });
