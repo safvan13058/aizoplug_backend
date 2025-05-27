@@ -120,6 +120,16 @@ const Swaggerdoc = {
             "example": 50.0
           },
           "description": "Filter by connector power output (in kW)"
+        },
+         {
+          "name": "amenities",
+          "in": "query",
+
+          "schema": {
+            "type": "string",
+            "example": "Wifi"
+          },
+          "description": "find with amenities"
         }
 
 
