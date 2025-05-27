@@ -301,15 +301,16 @@ app.get('/api/chargers/suggestions', async (req, res) => {
 
     let stations = result.rows;
 
-    if (!isNaN(userLat) && !isNaN(userLon) && !isNaN(radiusKm)) {
-      stations = stations
-        .map(station => ({
-          ...station,
-          distance: haversine(userLat, userLon, station.latitude, station.longitude) / 1000, // convert to km
-        }))
-        .filter(station => station.distance <= radiusKm) // filter using km
-        .sort((a, b) => a.distance - b.distance);
-    }
+   if (!isNaN(userLat) && !isNaN(userLon) && !isNaN(radiusKm)) {
+  stations = stations
+    .map(station => ({
+      ...station,
+      distance: Number((haversine(userLat, userLon, station.latitude, station.longitude) / 1000).toFixed(2)), // km, fixed 2 decimals
+    }))
+    .filter(station => station.distance <= radiusKm) // filter by km radius
+    .sort((a, b) => a.distance - b.distance);
+}
+
 
     stations = stations.slice(0, 10);
 
