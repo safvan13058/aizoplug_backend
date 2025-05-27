@@ -263,24 +263,45 @@ app.get('/api/chargers/location', async (req, res) => {
 });
 app.get('/api/chargers/suggestions', async (req, res) => {
   try {
-    const { q } = req.query;
+    const { q, lat, lon, radius } = req.query;
     if (!q) return res.status(400).json({ error: 'Query parameter `q` is required.' });
 
+    const userLat = parseFloat(lat);
+    const userLon = parseFloat(lon);
+    const radiusKm = parseFloat(radius); // radius in km
+
+    // Convert km to meters
+    const maxRadius = !isNaN(radiusKm) ? radiusKm * 1000 : NaN;
+
+    // Step 1: fetch stations matching text (no radius filter in DB for simplicity)
     const query = `
-      SELECT DISTINCT name
+      SELECT id, name, latitude, longitude
       FROM charging_stations
       WHERE LOWER(name) LIKE $1
       OR LOWER(amenities::text) LIKE $1
       OR LOWER(contact_info::text) LIKE $1
-      LIMIT 10
+      LIMIT 100
     `;
-
     const values = [`%${q.toLowerCase()}%`];
-
     const result = await db.query(query, values);
-    const suggestions = result.rows.map(row => row.name);
 
-    res.json({ suggestions });
+    // Step 2: calculate distance and filter/sort
+    let stations = result.rows;
+
+    if (!isNaN(userLat) && !isNaN(userLon) && !isNaN(maxRadius)) {
+      stations = stations
+        .map(station => ({
+          ...station,
+          distance: haversine(userLat, userLon, station.latitude, station.longitude),
+        }))
+        .filter(station => station.distance <= maxRadius)
+        .sort((a, b) => a.distance - b.distance);
+    }
+
+    // Step 3: limit results after filtering
+    stations = stations.slice(0, 10);
+
+    res.json({ suggestions: stations });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
