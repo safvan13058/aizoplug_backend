@@ -1795,49 +1795,178 @@ const Swaggerdoc = {
     }
   },
 
-  "/app/api/sessions/recent": {
+  // "/app/api/sessions/recent": {
+  //   "get": {
+  //     "tags": ["Charging Sessions"],
+  //     "summary": "Get recent charging sessions for a user",
+  //     "security": [
+  //       {
+  //         "bearerAuth": []
+  //       }
+  //     ],
+  //     "parameters": [
+  //       {
+  //         "name": "status",
+  //         "in": "query",
+  //         "description": "Filter by session status (ongoing, completed, failed)",
+  //         "schema": {
+  //           "type": "string",
+  //           "enum": ["ongoing", "completed", "failed"]
+  //         }
+  //       },
+  //       {
+  //         "name": "from",
+  //         "in": "query",
+  //         "description": "Start date filter (ISO 8601 format)",
+  //         "schema": {
+  //           "type": "string",
+  //           "format": "date-time",
+  //           "example": "2024-04-01T00:00:00Z"
+  //         }
+  //       },
+  //       {
+  //         "name": "to",
+  //         "in": "query",
+  //         "description": "End date filter (ISO 8601 format)",
+  //         "schema": {
+  //           "type": "string",
+  //           "format": "date-time",
+  //           "example": "2024-04-30T23:59:59Z"
+  //         }
+  //       },
+  //       {
+  //         "name": "limit",
+  //         "in": "query",
+  //         "description": "Number of sessions per page",
+  //         "schema": {
+  //           "type": "integer",
+  //           "default": 30
+  //         }
+  //       },
+  //       {
+  //         "name": "page",
+  //         "in": "query",
+  //         "description": "Page number",
+  //         "schema": {
+  //           "type": "integer",
+  //           "default": 1
+  //         }
+  //       }
+  //     ],
+  //     "responses": {
+  //       "200": {
+  //         "description": "List of recent charging sessions",
+  //         "content": {
+  //           "application/json": {
+  //             "schema": {
+  //               "type": "object",
+  //               "properties": {
+  //                 "page": {
+  //                   "type": "integer"
+  //                 },
+  //                 "limit": {
+  //                   "type": "integer"
+  //                 },
+  //                 "total_count": {
+  //                   "type": "integer"
+  //                 },
+  //                 "sessions": {
+  //                   "type": "array",
+  //                   "items": {
+  //                     "type": "object",
+  //                     "properties": {
+  //                       "id": { "type": "integer" },
+  //                       "user_id": { "type": "integer" },
+  //                       "vehicle_id": { "type": "integer" },
+  //                       "connector_id": { "type": "integer" },
+  //                       "start_time": { "type": "string", "format": "date-time" },
+  //                       "end_time": { "type": "string", "format": "date-time", "nullable": true },
+  //                       "updated_at": { "type": "string", "format": "date-time", "nullable": true },
+  //                       "energy_used": { "type": "number", "format": "float" },
+  //                       "cost": { "type": "number", "format": "float" },
+  //                       "payment_method": {
+  //                         "type": "string",
+  //                         "enum": ["wallet", "RFID", "QR"]
+  //                       },
+  //                       "status": {
+  //                         "type": "string",
+  //                         "enum": ["ongoing", "completed", "failed"]
+  //                       },
+  //                       "created_at": { "type": "string", "format": "date-time" },
+  //                       "promotion_id": { "type": "integer", "nullable": true },
+  //                       "discount_amount": { "type": "number", "format": "float" },
+  //                       "sponsored_by": { "type": "integer", "nullable": true },
+  //                       "sponsorship_note": { "type": "string", "nullable": true }
+  //                     }
+  //                   }
+  //                 }
+  //               }
+  //             }
+  //           }
+  //         }
+  //       },
+  //       "400": {
+  //         "description": "Bad request"
+  //       },
+  //       "401": {
+  //         "description": "Unauthorized"
+  //       },
+  //       "500": {
+  //         "description": "Internal server error"
+  //       }
+  //     }
+  //   }
+  // },
+ "/app/api/sessions/recent": {
     "get": {
+      "summary": "Get recent charging sessions",
+      "description": "Fetches a list of charging sessions for the authenticated user with filtering, pagination, and sorting options.",
       "tags": ["Charging Sessions"],
-      "summary": "Get recent charging sessions for a user",
-      "security": [
-        {
-          "bearerAuth": []
-        }
-      ],
       "parameters": [
         {
           "name": "status",
           "in": "query",
-          "description": "Filter by session status (ongoing, completed, failed)",
+          "description": "Filter by session status (e.g., completed, ongoing)",
+          "required": false,
           "schema": {
-            "type": "string",
-            "enum": ["ongoing", "completed", "failed"]
+            "type": "string"
           }
         },
         {
           "name": "from",
           "in": "query",
-          "description": "Start date filter (ISO 8601 format)",
+          "description": "Start date for filtering sessions (ISO format)",
+          "required": false,
           "schema": {
             "type": "string",
-            "format": "date-time",
-            "example": "2024-04-01T00:00:00Z"
+            "format": "date-time"
           }
         },
         {
           "name": "to",
           "in": "query",
-          "description": "End date filter (ISO 8601 format)",
+          "description": "End date for filtering sessions (ISO format)",
+          "required": false,
           "schema": {
             "type": "string",
-            "format": "date-time",
-            "example": "2024-04-30T23:59:59Z"
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "date",
+          "in": "query",
+          "description": "Filter sessions by a specific date (ISO format)",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date"
           }
         },
         {
           "name": "limit",
           "in": "query",
-          "description": "Number of sessions per page",
+          "description": "Number of results per page",
+          "required": false,
           "schema": {
             "type": "integer",
             "default": 30
@@ -1846,16 +1975,39 @@ const Swaggerdoc = {
         {
           "name": "page",
           "in": "query",
-          "description": "Page number",
+          "description": "Page number for pagination",
+          "required": false,
           "schema": {
             "type": "integer",
             "default": 1
+          }
+        },
+        {
+          "name": "sort_by",
+          "in": "query",
+          "description": "Sort by field (cost, energy_used, start_time)",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "enum": ["cost", "energy_used", "start_time"],
+            "default": "start_time"
+          }
+        },
+        {
+          "name": "sort_order",
+          "in": "query",
+          "description": "Sort order (asc or desc)",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "enum": ["asc", "desc"],
+            "default": "desc"
           }
         }
       ],
       "responses": {
         "200": {
-          "description": "List of recent charging sessions",
+          "description": "List of charging sessions",
           "content": {
             "application/json": {
               "schema": {
@@ -1875,28 +2027,88 @@ const Swaggerdoc = {
                     "items": {
                       "type": "object",
                       "properties": {
-                        "id": { "type": "integer" },
-                        "user_id": { "type": "integer" },
-                        "vehicle_id": { "type": "integer" },
-                        "connector_id": { "type": "integer" },
+                        "id": { "type": "string" },
+                        "user_id": { "type": "string" },
+                        "vehicle_id": { "type": "string" },
+                        "connector_id": { "type": "string", "nullable": true },
+                        "plug_switches_id": { "type": "string", "nullable": true },
                         "start_time": { "type": "string", "format": "date-time" },
                         "end_time": { "type": "string", "format": "date-time", "nullable": true },
-                        "updated_at": { "type": "string", "format": "date-time", "nullable": true },
-                        "energy_used": { "type": "number", "format": "float" },
-                        "cost": { "type": "number", "format": "float" },
-                        "payment_method": {
-                          "type": "string",
-                          "enum": ["wallet", "RFID", "QR"]
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": ["ongoing", "completed", "failed"]
-                        },
+                        "duration": { "type": "string", "nullable": true },
+                        "updated_at": { "type": "string", "format": "date-time" },
+                        "energy_used": { "type": "number" },
+                        "power": { "type": "number" },
+                        "ampere": { "type": "number" },
+                        "voltage": { "type": "number" },
+                        "cost": { "type": "number" },
+                        "payment_method": { "type": "string" },
+                        "status": { "type": "string" },
                         "created_at": { "type": "string", "format": "date-time" },
-                        "promotion_id": { "type": "integer", "nullable": true },
-                        "discount_amount": { "type": "number", "format": "float" },
-                        "sponsored_by": { "type": "integer", "nullable": true },
-                        "sponsorship_note": { "type": "string", "nullable": true }
+                        "promotion_id": { "type": "string", "nullable": true },
+                        "discount_amount": { "type": "number", "nullable": true },
+                        "sponsored_by": { "type": "string", "nullable": true },
+                        "sponsorship_note": { "type": "string", "nullable": true },
+                        "transaction": {
+                          "type": "object",
+                          "nullable": true,
+                          "properties": {
+                            "id": { "type": "string" },
+                            "amount": { "type": "number" },
+                            "type": { "type": "string" },
+                            "status": { "type": "string" }
+                          }
+                        },
+                        "connector": {
+                          "type": "object",
+                          "nullable": true,
+                          "properties": {
+                            "id": { "type": "string" },
+                            "type": { "type": "string" },
+                            "power_output": { "type": "number" },
+                            "state": { "type": "string" },
+                            "status": { "type": "string" },
+                            "ocpp_id": { "type": "string" },
+                            "station": {
+                              "type": "object",
+                              "nullable": true,
+                              "properties": {
+                                "id": { "type": "string" },
+                                "name": { "type": "string" },
+                                "latitude": { "type": "number" },
+                                "longitude": { "type": "number" },
+                                "amenities": { "type": "string" },
+                                "contact_info": { "type": "string" },
+                                "dynamic_pricing": { "type": "boolean" }
+                              }
+                            }
+                          }
+                        },
+                        "plug_switch": {
+                          "type": "object",
+                          "nullable": true,
+                          "properties": {
+                            "id": { "type": "string" },
+                            "device_id": { "type": "string" },
+                            "hub_index": { "type": "integer" },
+                            "type": { "type": "string" },
+                            "status": { "type": "string" },
+                            "dynamic_pricing": { "type": "boolean" },
+                            "last_heartbeat": { "type": "string", "format": "date-time" },
+                            "station": {
+                              "type": "object",
+                              "nullable": true,
+                              "properties": {
+                                "id": { "type": "string" },
+                                "name": { "type": "string" },
+                                "latitude": { "type": "number" },
+                                "longitude": { "type": "number" },
+                                "amenities": { "type": "string" },
+                                "contact_info": { "type": "string" },
+                                "dynamic_pricing": { "type": "boolean" }
+                              }
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -1905,18 +2117,26 @@ const Swaggerdoc = {
             }
           }
         },
-        "400": {
-          "description": "Bad request"
-        },
-        "401": {
-          "description": "Unauthorized"
-        },
         "500": {
-          "description": "Internal server error"
+          "description": "Internal Server Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string",
+                    "example": "Internal server error."
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
-  },
+ },
+  
   "/dashboard/api/stations/{station_id}/connectors": {
     "post": {
       "tags": ["Connectors"],
