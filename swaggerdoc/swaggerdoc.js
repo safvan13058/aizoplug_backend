@@ -213,6 +213,7 @@ const Swaggerdoc = {
   },
    "/app/api/chargers/suggestions": {
       "get": {
+        "tags": ["Charging Stations"],
         "summary": "Get charger station suggestions by text search and optional location filter",
         "description": "Returns up to 10 charging stations matching the query text, optionally filtered by distance radius from given latitude and longitude.",
         "parameters": [
