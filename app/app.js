@@ -270,8 +270,8 @@ app.get('/api/chargers/suggestions', async (req, res) => {
       SELECT DISTINCT name
       FROM charging_stations
       WHERE LOWER(name) LIKE $1
-      OR LOWER(amenities) LIKE $1
-      OR LOWER(contact_info) LIKE $1
+      OR LOWER(amenities::text) LIKE $1
+      OR LOWER(contact_info::text) LIKE $1
       LIMIT 10
     `;
 
@@ -286,6 +286,7 @@ app.get('/api/chargers/suggestions', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 // ............................ wallet test ..........................................
 app.post('/api/webhooks/payment', express.raw({ type: 'application/json' }), async (req, res) => {
