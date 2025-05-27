@@ -161,17 +161,29 @@ dashboard.put('/api/stations/images/:stationId/:imageId/primary',
 );
 
 // --------------------------station count--------------
-const {countstation,chargerStatus}=require('./home')
+const {countstation,chargerStatus, amountGraph, getEarningsByStationId}=require('./home')
 dashboard.get('api/stations/count',
   validateJwt,
   authorizeRoles('admin', 'staff', 'dealer'),
   countstation
 );
 
-dashboard.get('api/connector-summary/',
+dashboard.get('/api/connector-summary',
   validateJwt,
   authorizeRoles('admin', 'staff', 'dealer'),
   chargerStatus
+);
+
+dashboard.get('/api/host-earnings',
+  validateJwt,
+  authorizeRoles('admin', 'staff', 'dealer'),
+  amountGraph
+);
+
+dashboard.get('/api/station-earnings',
+  validateJwt,
+  authorizeRoles('admin', 'staff', 'dealer'),
+  getEarningsByStationId
 );
 
 module.exports = dashboard
