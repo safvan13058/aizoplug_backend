@@ -47,30 +47,113 @@ app.post("/create-order",
 //     res.status(400).json({ success: false, message: "Invalid signature" });
 //   }
 // });
+// app.post("/verify",
+//   validateJwt,
+
+//   authorizeRoles('admin', 'customer', 'staff', 'dealer'),
+//   async (req, res) => {
+//     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+//     const user_id = req.user.id;
+
+//     const hash = crypto
+//       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+//       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+//       .digest("hex");
+
+//     const isValid = hash === razorpay_signature;
+
+//     try {
+//       const order = await razorpay.orders.fetch(razorpay_order_id);
+//       const amountInRupees = order.amount / 100;
+
+//       const client = await db.connect();
+//       try {
+//         await client.query("BEGIN");
+
+//         // Insert transaction
+//         const transactionText = `
+//           INSERT INTO transactions (
+//             user_id, type, amount, transaction_type,
+//             payment_gateway_id, status, notes
+//           ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+//         `;
+//         await client.query(transactionText, [
+//           user_id,
+//           'credit',
+//           amountInRupees,
+//           'top-up',
+//           razorpay_payment_id,
+//           isValid ? 'completed' : 'failed',
+//           isValid ? 'Wallet top-up successful' : 'Signature mismatch or failed payment'
+//         ]);
+
+//         if (isValid) {
+//           // Update wallet
+//           const walletText = `
+//             UPDATE wallets
+//             SET balance = balance + $1,
+//                 last_transaction_at = NOW(),
+//                 updated_at = NOW()
+//             WHERE user_id = $2 AND status = 'active'
+//           `;
+//           await client.query(walletText, [amountInRupees, user_id]);
+//         }
+
+//         await client.query("COMMIT");
+
+//         if (isValid) {
+//           console.log("Payment verified and wallet updated")
+//           res.json({ success: true, message: "Payment verified and wallet updated" });
+//         } else {
+//            console.log("Invalid signature. Payment verification failed")
+//           res.status(400).json({ success: false, message: "Invalid signature. Payment verification failed" });
+//         }
+//       } catch (err) {
+//         await client.query("ROLLBACK");
+//          console.log("DB transaction error")
+//         console.error("DB transaction error:", err);
+//         res.status(500).json({ success: false, message: "Database error" });
+//       } finally {
+//         client.release();
+//       }
+//     } catch (err) {
+//       console.error("Payment verify error:", err);
+//       res.status(500).json({ success: false, message: "Payment verification failed" });
+//     }
+// });
+
 app.post("/verify",
   validateJwt,
-
   authorizeRoles('admin', 'customer', 'staff', 'dealer'),
   async (req, res) => {
+    console.log("payment verify")
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
     const user_id = req.user.id;
 
-    const hash = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest("hex");
-
-    const isValid = hash === razorpay_signature;
-
     try {
+      // Validate signature
+      const expectedSignature = crypto
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+        .digest("hex");
+
+      const isSignatureValid = expectedSignature === razorpay_signature;
+
+      // Fetch Razorpay order and payment info
       const order = await razorpay.orders.fetch(razorpay_order_id);
+      const payment = await razorpay.payments.fetch(razorpay_payment_id);
       const amountInRupees = order.amount / 100;
+
+      const paymentStatus = payment.status; // e.g., 'captured', 'failed', etc.
+
+      // Determine if payment is successful
+      const isPaymentSuccessful = isSignatureValid && paymentStatus === 'captured';
 
       const client = await db.connect();
       try {
         await client.query("BEGIN");
 
-        // Insert transaction
+        // Insert transaction record
         const transactionText = `
           INSERT INTO transactions (
             user_id, type, amount, transaction_type,
@@ -83,12 +166,12 @@ app.post("/verify",
           amountInRupees,
           'top-up',
           razorpay_payment_id,
-          isValid ? 'completed' : 'failed',
-          isValid ? 'Wallet top-up successful' : 'Signature mismatch or failed payment'
+          isPaymentSuccessful ? 'completed' : 'failed',
+          `Status: ${paymentStatus}. ${isSignatureValid ? 'Signature valid' : 'Invalid signature'}`
         ]);
 
-        if (isValid) {
-          // Update wallet
+        // Update wallet if successful
+        if (isPaymentSuccessful) {
           const walletText = `
             UPDATE wallets
             SET balance = balance + $1,
@@ -101,26 +184,29 @@ app.post("/verify",
 
         await client.query("COMMIT");
 
-        if (isValid) {
-          console.log("Payment verified and wallet updated")
+        if (isPaymentSuccessful) {
+          console.log("✅ Payment verified and wallet updated");
           res.json({ success: true, message: "Payment verified and wallet updated" });
         } else {
-           console.log("Invalid signature. Payment verification failed")
-          res.status(400).json({ success: false, message: "Invalid signature. Payment verification failed" });
+          console.warn("❌ Payment failed or signature invalid");
+          res.status(400).json({
+            success: false,
+            message: `Payment verification failed. Status: ${paymentStatus}`
+          });
         }
       } catch (err) {
         await client.query("ROLLBACK");
-         console.log("DB transaction error")
-        console.error("DB transaction error:", err);
+        console.error("❌ DB transaction error:", err);
         res.status(500).json({ success: false, message: "Database error" });
       } finally {
         client.release();
       }
     } catch (err) {
-      console.error("Payment verify error:", err);
+      console.error("❌ Payment verify error:", err);
       res.status(500).json({ success: false, message: "Payment verification failed" });
     }
-});
+  }
+);
 
 
 module.exports = app

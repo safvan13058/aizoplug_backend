@@ -91,4 +91,49 @@ const deleteswitch=  async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
       }
     }  
-module.exports = { addConnector, deleteConnector,deleteswitch};
+
+// Update connector field
+const updateconnector = async (req, res) => {
+  const connectorId = req.params.id;
+  const allowedFields = ['type', 'power_output', 'state', 'status', 'ocpp_id', 'last_updated'];
+  const updates = [];
+
+  const values = [];
+  let idx = 1;
+
+  for (const field of allowedFields) {
+    if (req.body[field] !== undefined && req.body[field] !== null) {
+      updates.push(`${field} = $${idx}`);
+      values.push(req.body[field]);
+      idx++;
+    }
+  }
+
+  // If no valid fields provided
+  if (updates.length === 0) {
+    return res.status(400).json({ error: 'No valid fields provided to update' });
+  }
+
+  // Add last_updated = NOW()
+  updates.push(`last_updated = NOW()`);
+
+  // Add connector ID to the values array
+  values.push(connectorId);
+
+  const query = `UPDATE connectors SET ${updates.join(', ')} WHERE id = $${values.length} RETURNING *`;
+
+  try {
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Connector not found' });
+    }
+
+    res.status(200).json({ message: 'Connector updated', connector: result.rows[0] });
+  } catch (err) {
+    console.error('Error updating connector:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+module.exports = { addConnector, deleteConnector,deleteswitch,updateconnector};
