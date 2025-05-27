@@ -211,6 +211,132 @@ const Swaggerdoc = {
       }
     }
   },
+   "/app/api/chargers/suggestions": {
+      "get": {
+        "summary": "Get charger station suggestions by text search and optional location filter",
+        "description": "Returns up to 10 charging stations matching the query text, optionally filtered by distance radius from given latitude and longitude.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Text query to search in name, amenities, or contact_info fields (case-insensitive)."
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            },
+            "description": "Latitude of user's location for distance filtering."
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            },
+            "description": "Longitude of user's location for distance filtering."
+          },
+          {
+            "name": "radius",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            },
+            "description": "Radius in kilometers for filtering charging stations by distance."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of suggested charging stations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "suggestions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "example": 1
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "SuperCharge Station"
+                          },
+                          "latitude": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 40.712776
+                          },
+                          "longitude": {
+                            "type": "number",
+                            "format": "float",
+                            "example": -74.005974
+                          },
+                          "distance": {
+                            "type": "number",
+                            "format": "float",
+                            "description": "Distance from user location in kilometers, if lat/lon/radius provided.",
+                            "example": 1.25
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required query parameter `q`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Query parameter `q` is required."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
   "/app/api/add/vehicles/": {
     "post": {
       "summary": "Create a new vehicle",
