@@ -261,6 +261,31 @@ app.get('/api/chargers/location', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+app.get('/api/chargers/suggestions', async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) return res.status(400).json({ error: 'Query parameter `q` is required.' });
+
+    const query = `
+      SELECT DISTINCT name
+      FROM charging_stations
+      WHERE LOWER(name) LIKE $1
+      OR LOWER(amenities) LIKE $1
+      OR LOWER(contact_info) LIKE $1
+      LIMIT 10
+    `;
+
+    const values = [`%${q.toLowerCase()}%`];
+
+    const result = await db.query(query, values);
+    const suggestions = result.rows.map(row => row.name);
+
+    res.json({ suggestions });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 // ............................ wallet test ..........................................
 app.post('/api/webhooks/payment', express.raw({ type: 'application/json' }), async (req, res) => {
