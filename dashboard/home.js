@@ -84,7 +84,7 @@ const amountGraph = async (req, res) => {
 
   try {
     const host_earning = await db.query(
-      `SELECT amount, created_at
+      `SELECT amount::TEXT, created_at
        FROM transactions
        WHERE transaction_type = 'host_earning'
          AND type = 'credit'
@@ -94,7 +94,7 @@ const amountGraph = async (req, res) => {
       [userId]
     );
 
-    res.json(host_earning.rows || host_earning); // `rows` if using pg
+    res.json(host_earning.rows); // This gives you the expected JSON array
   } catch (err) {
     console.error('Error fetching host earnings:', err);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -102,4 +102,33 @@ const amountGraph = async (req, res) => {
 };
 
 
-module.exports = { countstation, chargerStatus, amountGraph }
+const getEarningsByStationId = async (req, res) => {
+  const stationId = req.query.stationId;
+
+  if (!stationId) {
+    return res.status(400).json({ error: 'stationId query parameter is required' });
+  }
+
+  try {
+    const result = await db.query(
+      `SELECT t.amount::TEXT, t.created_at
+       FROM transactions t
+       INNER JOIN user_station_partners usp ON t.user_id = usp.user_id
+       WHERE usp.station_id = $1
+         AND t.transaction_type = 'host_earning'
+         AND t.type = 'credit'
+         AND t.status = 'completed'
+       ORDER BY t.created_at DESC;`, 
+      [stationId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching earnings by stationId:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
+
+module.exports = { countstation, chargerStatus, amountGraph, getEarningsByStationId }
