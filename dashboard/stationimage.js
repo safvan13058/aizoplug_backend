@@ -6,7 +6,8 @@ const multerS3 = require('multer-s3');
 
 // Store images temporarily in memory (or disk if preferred)
 const storage = multer.memoryStorage(); // Use diskStorage if you prefer saving locally
-const uploadMultiple = multer({ storage }).array('images', 10); // 'images' is the form field name
+const uploadMultiple = multer({ storage }).array('files', 10); // 'images' is the form field name
+
 
 const uploadImage = (req, res) => {
   uploadMultiple(req, res, async function (err) {
