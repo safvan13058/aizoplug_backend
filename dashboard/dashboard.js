@@ -118,7 +118,7 @@ dashboard.get(
   listPartners
 );
 // ---------------------------------------------------------------------------
-// ----------------------connectors-------------------------------------
+// ----------------------------connectors-------------------------------------
 const {addConnector, deleteConnector,deleteswitch,updateconnector} = require('./connectors');
 dashboard.post('/api/stations/:station_id/connectors', 
   validateJwt,
