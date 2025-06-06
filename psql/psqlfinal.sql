@@ -60,6 +60,16 @@ CREATE TABLE wallet_transactions_log (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE payment_logs (
+  id SERIAL PRIMARY KEY,
+  order_id VARCHAR(255) NOT NULL,
+  payment_id VARCHAR(255) NOT NULL,
+  status VARCHAR(50) NOT NULL,
+  reason TEXT,
+  amount NUMERIC(10, 2) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 
 CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,
