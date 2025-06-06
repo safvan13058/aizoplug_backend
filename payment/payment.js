@@ -20,6 +20,9 @@ app.post("/create-order",
         amount: amount * 100, // in paisa
         currency: "INR",
         receipt: `receipt_order_${Math.floor(Math.random() * 1000)}`,
+        notes:{
+          user_id:req.user.id
+        }
       };
 
       const order = await razorpay.orders.create(options);
@@ -394,7 +397,6 @@ app.post("/webhook", express.json(), async (req, res) => {
 
   const txnStatus = status === "captured" ? "completed" : "failed";
   const txnNote = error_description || `Webhook Event: ${event}. Status: ${status}.`;
-
 
   db.run(
     transactionText,
