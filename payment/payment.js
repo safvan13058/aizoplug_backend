@@ -338,7 +338,7 @@ app.post(
 );
 
 app.post("/webhook", express.json(), async (req, res) => {
-  const webhookSecret = "YOUR_WEBHOOK_SECRET";
+  const webhookSecret = "@bWEPRJB5XdT6VD";
   const crypto = require("crypto");
 
   const signature = req.headers["x-razorpay-signature"];
