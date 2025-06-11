@@ -55,6 +55,13 @@ try {
         isHttpsAvailable = true;
         console.log(`HTTPS Server is running on https://13.200.215.17:${PORT_HTTPS}`);
     });
+
+
+     // Start HTTPS on port 443
+  https.createServer(options, app).listen(443, () => {
+    console.log('✅ HTTPS server is running on https://host.aizoplug.com (port 443)');
+  });
+  
 } catch (error) {
     console.error('HTTPS setup failed:', error.message);
     console.log('HTTPS is unavailable, starting HTTP...');

@@ -354,24 +354,24 @@ app.post("/webhook", express.json(), async (req, res) => {
     .update(body)
     .digest("hex");
 
-  if (expectedSignature !== signature) {
+   if (expectedSignature !== signature) {
     return res.status(400).send("Invalid signature");
-  }
+   }
 
-  const event = req.body.event;
-  const payment = req.body.payload.payment.entity;
+   const event = req.body.event;
+   const payment = req.body.payload.payment.entity;
 
-  const {
+   const {
     order_id,
     id: razorpay_payment_id,
     amount,
     status,
     notes,
     error_description
-  } = payment;
+   } = payment;
 
-  const user_id = notes?.user_id || null; // ⚠️ must be passed in order creation
-  const amountInRupees = amount / 100;
+   const user_id = notes?.user_id || null; // ⚠️ must be passed in order creation
+   const amountInRupees = amount / 100;
 
   const paymentLogText = `
   INSERT INTO payment_logs (order_id, payment_id, status, reason, amount)
