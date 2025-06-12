@@ -341,68 +341,69 @@ app.post(
 );
 
 app.post("/webhook", async (req, res) => {
-  console.log("working webhook")
-  const webhookSecret = "@bWEPRJB5XdT6VD";
+  console.log("🔔 Razorpay webhook received");
+
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET; // Set this in your .env
   const crypto = require("crypto");
 
   const signature = req.headers["x-razorpay-signature"];
   const body = JSON.stringify(req.body);
 
- console.log(" webhook body===",body)
   const expectedSignature = crypto
     .createHmac("sha256", webhookSecret)
     .update(body)
     .digest("hex");
 
-   if (expectedSignature !== signature) {
+  if (expectedSignature !== signature) {
+    console.warn("❌ Invalid webhook signature");
     return res.status(400).send("Invalid signature");
-   }
+  }
 
-   const event = req.body.event;
-   const payment = req.body.payload.payment.entity;
+  const event = req.body.event;
+  const payment = req.body.payload.payment.entity;
 
-   const {
+  const {
     order_id,
     id: razorpay_payment_id,
     amount,
     status,
     notes,
     error_description
-   } = payment;
+  } = payment;
 
-   const user_id = notes?.user_id || null; // ⚠️ must be passed in order creation
-   const amountInRupees = amount / 100;
+  const user_id = notes?.user_id || null;
+  const amountInRupees = amount / 100;
 
   const paymentLogText = `
-  INSERT INTO payment_logs (order_id, payment_id, status, reason, amount)
-  VALUES ($1, $2, $3, $4, $5)
-`;
+    INSERT INTO payment_logs (order_id, payment_id, status, reason, amount)
+    VALUES ($1, $2, $3, $4, $5)
+  `;
 
-  // const amountInRupees = amount / 100; // assuming amount is in paise
-
-  await client.query(paymentLogText, [
-    order_id,
-    razorpay_payment_id,
-    status.toUpperCase(),
-    error_description || "N/A",
-    amountInRupees,
-  ]);
-
-
-  // 2. Insert into `transactions` table
   const transactionText = `
     INSERT INTO transactions (
       user_id, type, amount, transaction_type,
       payment_gateway_id, status, notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7)
   `;
 
   const txnStatus = status === "captured" ? "completed" : "failed";
   const txnNote = error_description || `Webhook Event: ${event}. Status: ${status}.`;
 
-  db.run(
-    transactionText,
-    [
+  const dbClient = await db.connect();
+  try {
+    await dbClient.query("BEGIN");
+
+    // Insert payment log
+    await dbClient.query(paymentLogText, [
+      order_id,
+      razorpay_payment_id,
+      status.toUpperCase(),
+      error_description || "N/A",
+      amountInRupees,
+    ]);
+
+    // Insert transaction record
+    await dbClient.query(transactionText, [
       user_id,
       "credit",
       amountInRupees,
@@ -410,13 +411,20 @@ app.post("/webhook", async (req, res) => {
       razorpay_payment_id,
       txnStatus,
       txnNote
-    ],
-    (err) => {
-      if (err) console.error("DB error (transactions):", err);
-    }
-  );
+    ]);
 
-  res.status(200).json({ status: "ok" });
+    await dbClient.query("COMMIT");
+
+    console.log(`✅ Webhook processed: ${status} | user_id=${user_id}`);
+    res.status(200).json({ status: "ok" });
+
+  } catch (err) {
+    await dbClient.query("ROLLBACK");
+    console.error("❌ Webhook DB transaction error:", err);
+    res.status(500).json({ status: "fail", message: "Database error in webhook" });
+  } finally {
+    dbClient.release();
+  }
 });
 
 
