@@ -343,7 +343,7 @@ app.post(
 app.post("/webhook", async (req, res) => {
   console.log("🔔 Razorpay webhook received");
 
-  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET; // Set this in your .env
+  const webhookSecret = "@bWEPRJB5XdT6VD"; // Set this in your .env
   const crypto = require("crypto");
 
   const signature = req.headers["x-razorpay-signature"];
