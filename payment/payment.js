@@ -382,8 +382,8 @@ app.post("/webhook", async (req, res) => {
   const transactionText = `
     INSERT INTO transactions (
       user_id, type, amount, transaction_type,
-      payment_gateway_id, status, notes
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+      payment_gateway_id, status, notes,created_at
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7,NOW())
   `;
 
   const txnStatus = status === "captured" ? "completed" : "failed";
@@ -410,7 +410,8 @@ app.post("/webhook", async (req, res) => {
       "top-up",
       razorpay_payment_id,
       txnStatus,
-      txnNote
+      txnNote,
+
     ]);
 
     await dbClient.query("COMMIT");
