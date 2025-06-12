@@ -340,7 +340,7 @@ app.post(
   }
 );
 
-app.post("/webhook", express.json(), async (req, res) => {
+app.post("/webhook", async (req, res) => {
   console.log("working webhook")
   const webhookSecret = "@bWEPRJB5XdT6VD";
   const crypto = require("crypto");
